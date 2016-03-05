@@ -1,0 +1,162 @@
+from bluesky.standard_config import *
+from epics import caget, caput
+import time
+
+
+def shclose():
+    #caput('XF:23ID1-VA{Diag:06-GV:1}Cmd:Cls-Cmd', 1, wait=True)  # wears our valve. don't use
+    #caput('XF:23ID1-PPS{PSh}Cmd:Cls-Cmd', 1, wait=True) 	  # use if DP:1-Sh:1 is broken
+    caput('XF:23IDA-EPS{DP:1-Sh:1}Cmd:In-Cmd',1)
+
+
+def shopen():
+    #caput('XF:23ID1-VA{Diag:06-GV:1}Cmd:Opn-Cmd', 1, wait=True)
+    #caput('XF:23ID1-PPS{PSh}Cmd:Opn-Cmd', 1, wait=True)
+    caput('XF:23IDA-EPS{DP:1-Sh:1}Cmd:Out-Cmd',1)
+
+
+def save_new_bg():
+    # Record initial shutter status
+    #shutter_open = caget('XF:23ID1-VA{Diag:06-GV:1}Pos-Sts')
+    shutter_open = 1 - caget('XF:23ID1-PPS{PSh}Pos-Sts')
+
+    # Close Shutter
+    shclose()
+
+    # Disable Background
+    caput('XF:23ID1-ES{FCCD}Proc1:EnableBackground', 0)
+
+    # Disable Filter
+    caput('XF:23ID1-ES{FCCD}Proc1:EnableFilter', 0)
+
+    # Get FCCD count time and wait for 3 x count time
+    count_time = caget('XF:23ID1-ES{FCCD}cam1:AcquireTime')
+    time.sleep(count_time*3+3)
+
+    # Re-take background
+    caput('XF:23ID1-ES{FCCD}Proc1:SaveBackground', 0)
+    caput('XF:23ID1-ES{FCCD}Proc1:SaveBackground', 1)
+
+    # Enable Background
+    caput('XF:23ID1-ES{FCCD}Proc1:EnableBackground', 1)
+
+    # Open shutter again if it was initially open
+    if shutter_open:
+        shopen()
+        time.sleep(3)
+
+
+def ct_dark():
+    #shutter_open = caget('XF:23ID1-VA{Diag:06-GV:1}Pos-Sts')
+    #shutter_open = 1 - caget('XF:23ID1-PPS{PSh}Pos-Sts')
+    shutter_open = caget('XF:23IDA-EPS{DP:1-Sh:1}Pos-Sts')
+
+    # Close shutter
+    shclose()
+    time.sleep(2)
+
+    print('\nShutter closed. Collecting dark image.')
+    ct()
+
+    # Open shutter again if it was initially open
+    if shutter_open:
+        shopen()
+        time.sleep(3)
+        print('\nShutter opened.')
+
+
+def ct_all_dark():
+    #shutter_open = caget('XF:23ID1-VA{Diag:06-GV:1}Pos-Sts')
+    #shutter_open = 1 - caget('XF:23ID1-PPS{PSh}Pos-Sts')
+    shutter_open = caget('XF:23IDA-EPS{DP:1-Sh:1}Pos-Sts')
+
+    # Close shutter
+    shclose()
+
+    # Stop camera acquisition
+    print('\nStopping acquisition to change gain..')
+    caput('XF:23ID1-ES{FCCD}cam1:Acquire', 0)
+
+    # Save current gain setting
+    initial_gain = caget('XF:23ID1-ES{FCCD}cam1:FCRICGain')
+
+    # Switch FCCD gain setting to 1
+    caput('XF:23ID1-ES{FCCD}cam1:FCRICGain', 2)#, wait=False)
+    time.sleep(3)
+    print('\nGain set to 1. Collecting dark images\n')
+    ct()
+
+    # Switch FCCD gain setting to 2
+    caput('XF:23ID1-ES{FCCD}cam1:FCRICGain', 1)#, wait=False)
+    time.sleep(3)
+    print('\nGain set to 2. Collecting dark images\n')
+    ct()
+
+    # Switch FCCD gain setting to 8
+    caput('XF:23ID1-ES{FCCD}cam1:FCRICGain', 0)#, wait=False)
+    time.sleep(3)
+    print('\nGain set to auto. Collecting dark images\n')
+    ct()
+
+    # Restore initial gain setting
+    caput('XF:23ID1-ES{FCCD}cam1:FCRICGain', initial_gain)#, wait=False)
+    time.sleep(3)
+    print('\nReturned to initial gain setting and restarting acquisition')
+
+    # Restart camera acquisition
+    caput('XF:23ID1-ES{FCCD}cam1:Acquire', 1)#, wait=False)
+
+    # Open shutter again if it was initially open
+    if shutter_open:
+        shopen()
+        time.sleep(3)
+
+
+def del_det(det):
+    if det in gs.DETS:
+        gs.DETS.remove(det)
+    else:
+        print('Detector not in gs.DETS')
+
+    if det == sclr:
+        gs.TABLE_COLS = ['fccd_stats_total1']
+        gs.PLOT_Y = 'fccd_stats_total1'
+    elif det == fccd:
+        gs.TABLE_COLS = ['sclr_chan2']
+        gs.PLOT_Y = 'sclr_chan2'
+
+
+def set_det(det):
+    if det not in gs.DETS:
+        gs.DETS.append(det)
+
+    if det == dif_beam_cam:
+        if fccd in gs.DETS:
+            gs.DETS.remove(fccd)
+        gs.TABLE_COLS = ['dif_beam_cam_stats_total1', 'dif_beam_cam_stats_total3']
+        gs.PLOT_Y = 'dif_beam_cam_stats_total3'
+    if det == sclr:
+        if fccd in gs.DETS:
+            gs.DETS.remove(fccd)
+        gs.TABLE_COLS = ['sclr_chan2']
+        gs.PLOT_Y = 'sclr_chan2'
+    elif det == fccd:
+        #if sclr in gs.DETS:
+            #gs.DETS.remove(sclr)
+        gs.TABLE_COLS = ['fccd_stats_total1']
+        gs.PLOT_Y = 'fccd_stats_total1'
+
+
+def add_det(det):
+    if det not in gs.DETS:
+        gs.DETS.append(det)
+
+    if det == sclr:
+        if 'sclr_chan2' not in gs.TABLE_COLS:
+            gs.TABLE_COLS.append('sclr_chan2')
+        gs.PLOT_Y = 'sclr_chan2'
+    elif det == fccd:
+        if 'fccd_stats_total1' not in gs.TABLE_COLS:
+            gs.TABLE_COLS.append('fccd_stats_total1')
+        gs.PLOT_Y = 'fccd_stats_total1'
+
