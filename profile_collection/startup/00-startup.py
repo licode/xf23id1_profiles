@@ -19,6 +19,7 @@ from bluesky.scientific_callbacks import plot_peak_stats
 from bluesky.hardware_checklist import *
 from bluesky import qt_kicker   # provides the libraries for live plotting
 qt_kicker.install_qt_kicker()    # installs the live plotting libraries
+setup_ophyd()
 
 # Set up default metadata.
 gs.RE.md['group'] = ''
