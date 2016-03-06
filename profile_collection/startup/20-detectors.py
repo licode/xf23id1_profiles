@@ -272,6 +272,7 @@ class AreaDetectorTimeseriesCollector:
         self._pv_wfrm_ts = epics.PV("{}TSTimestamp".format(pv_basename), auto_monitor=False)
         self._cb = None
         self.done = True
+        self.success = True
 
     def stage(self):
         print("staging %s" % self._name)
