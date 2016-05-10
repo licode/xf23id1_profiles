@@ -11,7 +11,7 @@ gs.DETS = [theta, delta, gamma,
            epu1, epu2,
            slt1, slt2, slt3,
            m1a, m3a,
-           mono_tempa, mono_tempb, mono_pres, grt1_temp, grt2_temp]
+           mono_tempa, mono_tempb,  grt1_temp, grt2_temp]
 
 ## After the new implementation in Ophyd/Bluesky
 theta.user_readback.name = 'theta'
@@ -46,6 +46,7 @@ gs.DETS.append(ring_curr)
 #gs.DETS.append(nptz)
 
 gs.DETS.append(sclr)
+gs.DETS.append(diag6_monitor)
 
 gs.COUNT_TIME = 1
 

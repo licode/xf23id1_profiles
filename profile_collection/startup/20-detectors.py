@@ -16,6 +16,11 @@ ring_curr = EpicsSignal('XF:23ID-SR{}I-I',
 diag6_monitor = EpicsSignal('XF:23ID1-BI{Diag:6-Cam:1}Stats1:Total_RBV',
                             name='diag6_monitor')
 
+
+##selected for beam position only with no image filtering
+#diag6_raw4 = EpicsSignal('XF:23ID1-BI{Diag:6-Cam:1}Stats4:Total_RBV',
+#                            name='diag6_raw4')
+
 # TODO Make these a Device so it can be used in bluesky.
 mono_tempa= EpicsSignal('XF:23ID1-OP{TCtrl:1-Chan:A}T-I',
                         name='mono_tempa')
@@ -23,8 +28,6 @@ mono_tempa= EpicsSignal('XF:23ID1-OP{TCtrl:1-Chan:A}T-I',
 mono_tempb = EpicsSignal('XF:23ID1-OP{TCtrl:1-Chan:B}T-I',
                         name='mono_tempb')
 
-mono_pres = EpicsSignal('XF:23ID1-OP{Mon-Water}P-I',
-                        name='mono_pres')
 
 grt1_temp = EpicsSignal('XF:23ID1-OP{Mon-Grt:1}T-I',
                         name='grt1_temp')
@@ -199,6 +202,7 @@ class WaveformCollector:
         self._cb = None
         self._data_is_time = data_is_time
         self.done = True
+        self.success = True
 
     def _get_wfrm(self):
         if self._pv_wfrm_n.get():
@@ -359,6 +363,12 @@ fccd_flyer1 = AreaDetectorTimeseriesCollector('fccd_flyer1',
 # pimte_tot5 = EpicsSignal('XF:23ID1-ES{Dif-Cam:PIMTE}Stats5:Total_RBV',
 #                          rw=False, name='pimte_tot5')
 
-# The Saturn(?) Vortex MCA detector
+# Saturn interface for Vortex MCA detector
 vortex = Vortex('XF:23ID1-ES{Vortex}', name='vortex')
-vortex.read_attrs = ['mca.spectrum', 'mca.preset_live_time']
+#vortex.read_attrs = ['mca.spectrum', 'mca.preset_live_time']
+vortex.read_attrs = ['mca.spectrum', 'mca.preset_live_time', 'mca.rois']
+vortex.mca.read_attrs.append('rois')
+vortex.mca.rois.read_attrs = ['roi0','roi1','roi2','roi3','roi4']
+#gs.TABLE_COLS = ['vortex_mca_rois_roi4_count']; gs.PLOT_Y = 'vortex_mca_rois_roi4_count'
+
+
