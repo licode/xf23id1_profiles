@@ -1,4 +1,3 @@
-from bluesky.standard_config import *
 from epics import caget, caput
 import time
 
@@ -180,9 +179,9 @@ def ct_fccd(freq, num_images):
     ct()
 
 
-from itertools import count
+import itertools
 
 def exp_decay(tc, t0=1):
-   c = count()
+   c = itertools.count()
    for i in c:
        yield t0 * np.exp(-i/tc)

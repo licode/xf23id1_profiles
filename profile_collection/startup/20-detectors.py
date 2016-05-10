@@ -192,6 +192,8 @@ import numpy as np
 
 class WaveformCollector:
     def __init__(self, name, pv_basename, data_is_time=True):
+        self.root = self
+        self.parent = None
         self._name = name
         self._pv_basename = pv_basename
         self._pv_sel = epics.PV("{}Sw-Sel".format(pv_basename))
@@ -265,6 +267,8 @@ fccd_time = WaveformCollector('fccd_time', 'XF:23ID1-ES{FCCD-TS}')
 
 class AreaDetectorTimeseriesCollector:
     def __init__(self, name, pv_basename, num_points = 1000000):
+        self.root = self
+        self.parent = None
         self._name = name
         self._pv_basename = pv_basename
         self._num_points = num_points
