@@ -1,10 +1,13 @@
 
+
+
 from ophyd import (EpicsScaler, EpicsSignal, EpicsSignalRO, Device, SingleTrigger, HDF5Plugin,
                    ImagePlugin, StatsPlugin)
 from ophyd.areadetector.filestore_mixins import FileStoreHDF5IterativeWrite
 from ophyd.areadetector import ADComponent, EpicsSignalWithRBV
 from ophyd import Component as Cpt
 from ophyd import AreaDetector
+from bluesky.examples import NullStatus
 
 # Ring current
 
@@ -231,6 +234,9 @@ class WaveformCollector:
         else:
             self._cb = cb
 
+    def complete(self):
+        return NullStatus()
+
     def _finish(self):
         self.ready = True
         if self._cb is not None:
@@ -256,8 +262,8 @@ class WaveformCollector:
     def stop(self):
         self._pv_sel.put(0, wait=True) # Stop Collection
 
-    def describe(self):
-        return [{self._name: {'source': self._pv_basename, 'dtype': 'number', 'shape': None}}]
+    def describe_collect(self):
+        return {self._name: {self._name: {'source': self._pv_basename, 'dtype': 'number', 'shape': None}}}
 
 
 topoff_inj = WaveformCollector('topoff_inj', 'XF:23ID1-SR{TO-Inj}', data_is_time=False)
@@ -300,6 +306,9 @@ class AreaDetectorTimeseriesCollector:
         self._pv_tscontrol.put(0, wait=True) # Erase buffer and start collection
         return self
 
+    def complete(self):
+        return NullStatus()
+
     @property
     def finished_cb(self):
         return self._cb
@@ -337,8 +346,8 @@ class AreaDetectorTimeseriesCollector:
     def stop(self):
         self._pv_tscontrol.put(2, wait=True) # Stop Collection
 
-    def describe(self):
-        return [{self._name: {'source': self._pv_basename, 'dtype': 'number', 'shape': None}}]
+    def describe_collect(self):
+        return {self._name: {self._name: {'source': self._pv_basename, 'dtype': 'number', 'shape': None}}}
 
 diag6_flyer1 = AreaDetectorTimeseriesCollector('diag6_flyer1',
                                                'XF:23ID1-BI{Diag:6-Cam:1}Stats1:',

@@ -28,6 +28,7 @@ install_qt_kicker()
 from ophyd.commands import *
 from bluesky.callbacks import *
 from bluesky.spec_api import *
+from bluesky.plan_tools import print_summary
 from bluesky.global_state import gs, abort, stop, resume
 from databroker import (DataBroker as db, get_events, get_images,
                         get_table, get_fields, restream, process)
@@ -48,10 +49,11 @@ from bluesky.callbacks.scientific import plot_peak_stats
 
 
 # Set up default metadata.
+# from historydict import HistoryDict
+# gs.RE.md = HistoryDict(filename)
 gs.RE.md['group'] = ''
 gs.RE.md['config'] = {}
 gs.RE.md['beamline_id'] = 'CSX-1'
-
 
 # Add a callback that prints scan IDs at the start of each scan.
 def print_scan_ids(name, start_doc):
