@@ -35,6 +35,7 @@ gs.TTH_MOTOR = delta  # an approximation...
 #gs.PLOT_Y = 'sclr_chan4'
 
 gs.DETS.append(ring_curr)
+gs.DETS.append(nanop)
 #gs.DETS.append(sm_i)
 #gs.DETS.append(sm_v)
 #gs.DETS.append(sm_r)

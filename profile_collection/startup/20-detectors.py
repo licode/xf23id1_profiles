@@ -1,10 +1,9 @@
 
-
-
 from ophyd import (EpicsScaler, EpicsSignal, EpicsSignalRO, Device, SingleTrigger, HDF5Plugin,
-                   ImagePlugin, StatsPlugin)
+			   ImagePlugin, StatsPlugin, ROIPlugin, TransformPlugin)
 from ophyd.areadetector.filestore_mixins import FileStoreHDF5IterativeWrite
 from ophyd.areadetector import ADComponent, EpicsSignalWithRBV
+from ophyd.areadetector.plugins import PluginBase, ProcessPlugin
 from ophyd import Component as Cpt
 from ophyd import AreaDetector
 from bluesky.examples import NullStatus
@@ -31,6 +30,11 @@ mono_tempa= EpicsSignal('XF:23ID1-OP{TCtrl:1-Chan:A}T-I',
 mono_tempb = EpicsSignal('XF:23ID1-OP{TCtrl:1-Chan:B}T-I',
                         name='mono_tempb')
 
+mono_tempc= EpicsSignal('XF:23ID1-OP{TCtrl:1-Chan:C}T-I',name='mono_tempc')
+
+mono_tempd = EpicsSignal('XF:23ID1-OP{TCtrl:1-Chan:D}T-I',name='mono_tempd')
+
+
 
 grt1_temp = EpicsSignal('XF:23ID1-OP{Mon-Grt:1}T-I',
                         name='grt1_temp')
@@ -40,8 +44,13 @@ grt2_temp = EpicsSignal('XF:23ID1-OP{Mon-Grt:2}T-I',
 
 
 # Utility water temperature after mixing valve
-uw_temp = EpicsSignal('UT:SB1-Cu:1{}T:Spply_Ld-I',
-                        name='uw_temp')
+uw_temp = EpicsSignal('UT:SB1-Cu:1{}T:Spply_Ld-I',name='uw_temp')
+
+
+# Calculated BPMs for combined EPUs
+angX = EpicsSignal('XF:23ID-ID{BPM}Val:AngleXS-I',name='angX')
+
+angY = EpicsSignal('XF:23ID-ID{BPM}Val:AngleYS-I',name='angY')
 
 
 # CSX-1 Scalar
@@ -62,6 +71,13 @@ class StandardCam(SingleTrigger, AreaDetector):
     stats3 = Cpt(StatsPlugin, 'Stats3:')
     stats4 = Cpt(StatsPlugin, 'Stats4:')
     stats5 = Cpt(StatsPlugin, 'Stats5:')
+    roi1 = Cpt(ROIPlugin, 'ROI1:')
+    roi2 = Cpt(ROIPlugin, 'ROI2:')
+    roi3 = Cpt(ROIPlugin, 'ROI3:')
+    roi4 = Cpt(ROIPlugin, 'ROI4:')
+
+    proc1 = Cpt(ProcessPlugin, 'Proc1:')
+
 
 class NoStatsCam(SingleTrigger, AreaDetector):
     pass
@@ -98,9 +114,11 @@ class TriggerUsingCustomEnable(SingleTrigger):
             raise RuntimeError("Detector must in be acquire mode before scan is begun.")
         super().stage()
 
+#class ProductionCam(SingleTrigger, AreaDetector):
 class ProductionCam(TriggerUsingCustomEnable, AreaDetector):
     enable = ADComponent(EpicsSignalWithRBV, 'FastCCD1:EnableOutput')
     plugin_num_images = ADComponent(EpicsSignalWithRBV, 'FastCCD1:NumImages')
+    #plugin_num_images = ADComponent(EpicsSignalWithRBV, 'cam1:NumImages')
 
     ## Trying to add useful info..
     stats1 = Cpt(StatsPlugin, 'Stats1:')
@@ -108,11 +126,24 @@ class ProductionCam(TriggerUsingCustomEnable, AreaDetector):
     stats3 = Cpt(StatsPlugin, 'Stats3:')
     stats4 = Cpt(StatsPlugin, 'Stats4:')
     stats5 = Cpt(StatsPlugin, 'Stats5:')
+    roi1 = Cpt(ROIPlugin, 'ROI1:')
+    roi2 = Cpt(ROIPlugin, 'ROI2:')
+    roi3 = Cpt(ROIPlugin, 'ROI3:')
+    roi4 = Cpt(ROIPlugin, 'ROI4:')
+    trans1 = Cpt(TransformPlugin, 'Trans1:')
+
+    proc1 = Cpt(ProcessPlugin, 'Proc1:')
+    proc2 = Cpt(ProcessPlugin, 'Proc2:')
+
+    fccdproc1 = Cpt(PluginBase, 'FastCCD1:')
+    fccdproc2 = Cpt(PluginBase, 'FastCCD2:')
 
     acquire_time = ADComponent(EpicsSignalWithRBV, 'cam1:AcquireTime')
+    #num_images_captured =  Cpt(EpicsSignalRO, 'cam1:NumImages') #didn't seem to change anything
     num_images_captured =  Cpt(EpicsSignalRO, 'HDF1:NumCaptured_RBV')
 
     ##
+    #hdf5 = Cpt(HDF5PluginWithFileStore,
     hdf5 = Cpt(HDF5PluginWithFileStoreUsingCustomEnable,
                    suffix='HDF1:',
                    write_path_template='/GPFS/xf23id/xf23id1/fccd_data/%Y/%m/%d/')
@@ -130,11 +161,12 @@ class TestCam(SingleTrigger, AreaDetector):
                    # The trailing '/' is essential!!
 
 
-fs1 = StandardCam('XF:23IDA-BI:1{FS:1-Cam:1}', name='fs1')
 diag3 = StandardCam('XF:23ID1-BI{Diag:3-Cam:1}', name='diag3')
 diag5 = StandardCam('XF:23ID1-BI{Diag:5-Cam:1}', name='diag5')
 diag6 = NoStatsCam('XF:23ID1-BI{Diag:6-Cam:1}', name='diag6')
+
 dif_beam = StandardCam('XF:23ID1-ES{Dif-Cam:Beam}', name='dif_beam')
+# fs1 = StandardCam('XF:23IDA-BI:1{FS:1-Cam:1}', name='fs1')
 
 dif_beam.read_attrs = ['stats1']
 dif_beam.stats1.read_attrs = ['total']

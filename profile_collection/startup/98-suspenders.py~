@@ -1,0 +1,12 @@
+from bluesky.suspenders import (SuspendBoolHigh,
+                                SuspendBoolLow,
+                                SuspendFloor,
+                                SuspendCeil,
+                                SuspendInBand,
+                                SuspendOutBand)
+
+ring_suspender = SuspendFloor('XF:23ID-SR{}I-I', 230, sleep=120)
+
+
+fe_shut_suspender = SuspendBoolLow('XF:23ID-PPS{Sh:FE}Pos-Sts', sleep=900)
+

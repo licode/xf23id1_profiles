@@ -1,6 +1,7 @@
 from ophyd import Component as Cpt
 from ophyd import (PseudoSingle, EpicsMotor, SoftPositioner, Signal)
 from hkl.diffract import E6C
+from ophyd.pseudopos import (pseudo_position_argument, real_position_argument)
 
 
 # TODO: fix upstream!!
@@ -32,11 +33,14 @@ class Tardis(E6C):
         self.chi.move(0.0)
         self.phi.move(0.0)
 
+    @pseudo_position_argument
+    def set(self, position):
+        return super().set([float(_) for _ in position])
 
 # FIXME: hack to get around what should have been done at init of tardis_calc instance
 # tardis_calc._lock_engine = True
 
-# tardis = Tardis('', name='tardis', calc_inst=tardis_calc, energy=tardis_calc.energy)
+# tardis = Tardis('', name='tardis', calc_inst=tardis_calc)
 tardis = Tardis('', name='tardis')
 
 # re-map Tardis' axis names onto what an E6C expects

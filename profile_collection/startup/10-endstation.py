@@ -35,7 +35,8 @@ eta = EpicsMotor('XF:23ID1-ES{Diag:1-Ax:Eta}Mtr', name='eta')
 
 # Lakeshore 336 Temp Controller
 
-temp_sp = Lakeshore336('XF:23ID1-ES{TCtrl:1-Out:1}', name='temp_sp')
+temp_sp = Lakeshore336('XF:23ID1-ES{TCtrl:1-Out:1}')
+#, name='temp_sp', put_complete=True)
 
 
 
