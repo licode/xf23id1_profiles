@@ -48,8 +48,15 @@ def fccd_aware_trigger_and_read(devices, name='primary'):
         plan_stack.append(bp.wait(group=slow_grp))
     return plan_stack
 
-
+#base_tar = bp.trigger_and_read
 # If this customization of triggering behavior causes unforeseen
 # trouble, just comment out the following line. The definition
 # above can stay.
+#def paranoid_trigger_and_read(*args, **kwargs):
+#    yield from paranoid_checking_and_waiting_plan()
+#    return (yield from base_tar(*args, **kwargs))
+
+# THIS IS MONKEY PATCHING PLANS
+# bp.trigger_and_read = paranoid_trigger_and_read   
+
 #bp.trigger_and_read = fccd_aware_trigger_and_read
