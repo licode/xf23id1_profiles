@@ -86,8 +86,19 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
     # AD v2.2.0 (at least) does not have this. It is present in v1.9.1.
     file_number_sync = None
 
+    # By defeault, FileStoreHDF5 relies on the signal hdf5.num_capture
+    # to determine how many "frames" (2D images) are in a given "point"
+    # (datum document in FileStore). This breaks if we capture in
+    # "Stream" mode, in which hdf5.num_capture is always 0 (meaning, I
+    # guess, undefined. Thanks, EPICS). We'll use a different signal.
+    def get_frames_per_point(self):
+        return int(self.parent.cam.num_images.get())
+
 
 class HDF5PluginWithFileStoreUsingCustomEnable(HDF5PluginWithFileStore):
+
+    # As in HDF5PluginWithFileStore, we customize how we find out how
+    # many 2D images constitute one "datum".
     def get_frames_per_point(self):
         return int(self.parent.plugin_num_images.get())
 
@@ -114,12 +125,8 @@ class TriggerUsingCustomEnable(SingleTrigger):
             raise RuntimeError("Detector must in be acquire mode before scan is begun.")
         super().stage()
 
-#class ProductionCam(SingleTrigger, AreaDetector):
-class ProductionCam(TriggerUsingCustomEnable, AreaDetector):
-    enable = ADComponent(EpicsSignalWithRBV, 'FastCCD1:EnableOutput')
-    plugin_num_images = ADComponent(EpicsSignalWithRBV, 'FastCCD1:NumImages')
-    #plugin_num_images = ADComponent(EpicsSignalWithRBV, 'cam1:NumImages')
 
+class ProductionCamBase(AreaDetector):
     ## Trying to add useful info..
     stats1 = Cpt(StatsPlugin, 'Stats1:')
     stats2 = Cpt(StatsPlugin, 'Stats2:')
@@ -139,18 +146,35 @@ class ProductionCam(TriggerUsingCustomEnable, AreaDetector):
     fccdproc2 = Cpt(PluginBase, 'FastCCD2:')
 
     acquire_time = ADComponent(EpicsSignalWithRBV, 'cam1:AcquireTime')
-    #num_images_captured =  Cpt(EpicsSignalRO, 'cam1:NumImages') #didn't seem to change anything
-    num_images_captured =  Cpt(EpicsSignalRO, 'HDF1:NumCaptured_RBV')
 
-    ##
-    #hdf5 = Cpt(HDF5PluginWithFileStore,
-    hdf5 = Cpt(HDF5PluginWithFileStoreUsingCustomEnable,
-                   suffix='HDF1:',
-                   write_path_template='/GPFS/xf23id/xf23id1/fccd_data/%Y/%m/%d/')
-                   # The trailing '/' is essential!!
-
+    # This does nothing, but it's the right place to add code to be run
+    # once at instantiation time.
     def __init__(self, *arg, **kwargs):
         super().__init__(*arg, **kwargs)
+
+
+class ProductionCamStandard(SingleTrigger, ProductionCamBase):
+    # plugin_num_images = ADComponent(EpicsSignalWithRBV, 'cam1:NumImages')
+    # num_images_captured = Cpt(EpicsSignalRO, 'cam1:NumImages')  # not needed?
+
+    hdf5 = Cpt(HDF5PluginWithFileStore,
+               suffix='HDF1:',
+               write_path_template='/GPFS/xf23id/xf23id1/fccd_data/%Y/%m/%d/')
+
+
+class ProductionCamCustom(TriggerUsingCustomEnable, ProductionCamBase):
+    enable = ADComponent(EpicsSignalWithRBV, 'FastCCD1:EnableOutput')
+
+    plugin_num_images = ADComponent(EpicsSignalWithRBV, 'FastCCD1:NumImages')  # used by FileStore to record frame_per_point
+    # The custom signal `plugin_num_images` plays the role that
+    # `hdf5.num_capture` normally plays in providing 'frame_per_point'
+    # to the FileStore resource document.
+
+    # num_images_captured =  Cpt(EpicsSignalRO, 'HDF1:NumCaptured_RBV')  # not needed?
+
+    hdf5 = Cpt(HDF5PluginWithFileStoreUsingCustomEnable,
+               suffix='HDF1:',
+               write_path_template='/GPFS/xf23id/xf23id1/fccd_data/%Y/%m/%d/')
 
 
 class TestCam(SingleTrigger, AreaDetector):
@@ -197,14 +221,18 @@ class FastShutter(Device):
     def close(self):
         self.shutter.put(0)
 
-fccd = ProductionCam('XF:23ID1-ES{FCCD}', name='fccd')
+fccd = ProductionCamCustom('XF:23ID1-ES{FCCD}', name='fccd')
 fccd.read_attrs = ['hdf5']
 fccd.hdf5.read_attrs = []
 
 ## Adding useful info..
 fccd.read_attrs.append('acquire_time')
-fccd.read_attrs.append('num_images_captured')
-fccd.read_attrs.append('plugin_num_images')
+# StandardCam does not have these; only Custom does. Add them
+# to read_attrs only if they are present.
+if 'num_images_captured' in fccd.signal_names:
+    fccd.read_attrs.append('num_images_captured')
+if 'plugin_num_images' in fccd.signal_names:
+    fccd.read_attrs.append('plugin_num_images')
 
 fccd.read_attrs.append('stats1')
 fccd.stats1.read_attrs = ['total']
