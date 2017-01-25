@@ -20,6 +20,7 @@ gamma.user_readback.name = 'gamma'
 
 pgm_en.readback.name = 'energy'
 
+sclr.names.read_attrs=['name1','name2','name3','name4','name5','name6']
 sclr.channels.read_attrs=['chan1','chan2','chan3','chan4','chan5','chan6']
 
 
@@ -46,7 +47,6 @@ gs.DETS.append(nanop)
 #gs.DETS.append(npty)
 #gs.DETS.append(nptz)
 
-gs.DETS.append(sclr)
 gs.DETS.append(diag6_monitor)
 
 gs.COUNT_TIME = 1
