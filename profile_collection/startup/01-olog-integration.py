@@ -15,5 +15,12 @@ configured_logbook_func = partial(generic_logbook_func, logbooks=LOGBOOKS)
 logbook = simple_olog_client
 
 cb = logbook_cb_factory(configured_logbook_func)
-RE.subscribe('start', cb) ## olog problem -> uncomment when it will
+
+def fault_tolerant_olog(name, doc):
+    try:
+        cb(name, doc)
+    except Exception as exc:
+        print('olog error ignored:', exc)
+
+RE.subscribe('start', fault_tolerant_olog)  ## olog problem -> uncomment when it will
 # stop hunging..
