@@ -3,6 +3,10 @@ from ophyd import (PseudoSingle, EpicsMotor, SoftPositioner, Signal)
 from hkl.diffract import E6C
 from ophyd.pseudopos import (pseudo_position_argument, real_position_argument)
 
+# Add MuR and MuT to bluesky list of motors and detectors.
+muR = EpicsMotor('XF:23ID1-ES{Dif-Ax:MuR}Mtr', name='muR')
+muT = EpicsMotor('XF:23ID1-ES{Dif-Ax:MuT}Mtr', name='muT')
+
 
 # TODO: fix upstream!!
 class NullMotor(SoftPositioner):
@@ -18,6 +22,7 @@ class Tardis(E6C):
 
     theta = Cpt(EpicsMotor, 'XF:23ID1-ES{Dif-Ax:Th}Mtr')
     omega = Cpt(NullMotor)
+    #omega = Cpt(EpicsSignal,'XF:23ID1-ES{Dif-Ax:MuR}Mtr.RBV')
     chi =   Cpt(NullMotor)
     phi =   Cpt(NullMotor)
     delta = Cpt(EpicsMotor, 'XF:23ID1-ES{Dif-Ax:Del}Mtr')
@@ -29,7 +34,7 @@ class Tardis(E6C):
 
         # prime the 3 null-motors with initial values
         # otherwise, position == None --> describe, etc gets borked
-        self.omega.move(0.0)
+        self.omega.move(muR.user_readback.value)
         self.chi.move(0.0)
         self.phi.move(0.0)
 
@@ -80,7 +85,7 @@ tardis.calc['chi'].fit = False
 
 # we don't have it!! Fix to 0
 tardis.calc['omega'].limits = (0, 0)
-tardis.calc['omega'].value = 0
+tardis.calc['omega'].value = 0#tardis.omega.position.real
 tardis.calc['omega'].fit = False
 
 # Attention naming convention inverted at the detector stages!

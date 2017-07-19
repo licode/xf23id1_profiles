@@ -47,30 +47,36 @@ epu1 = EPU1('XF:23ID-ID{EPU:1', name='epu1')
 
 epu2 = EPU2('XF:23ID-ID{EPU:2', name='epu2')
 
-# Front End Slits (Primary Slits)
 
-# fe_xc = PVPositioner('FE:C23A-OP{Slt:12-Ax:X}center',
+## Front End Slits (Primary Slits)
+#
+#fe_xc = PVPositioner(setpoint='FE:C23A-OP{Slt:12-Ax:X}center',
 #                     readback='FE:C23A-OP{Slt:12-Ax:X}t2.D',
 #                     stop='FE:C23A-CT{MC:1}allstop',
-#                     stop_val=1, put_complete=True,
+#                     stop_val=1,
+#                     put_complete=True,
 #                     name='fe_xc')
 #
-#fe_yc = PVPositioner('FE:C23A-OP{Slt:12-Ax:Y}center',
+#fe_yc = PVPositioner(setpoint='FE:C23A-OP{Slt:12-Ax:Y}center',
 #                     readback='FE:C23A-OP{Slt:12-Ax:Y}t2.D',
 #                     stop='FE:C23A-CT{MC:1}allstop',
 #                     stop_val=1,
 #                     put_complete=True,
 #                     name='fe_yc')
-
-#fe_xg = PVPositioner('FE:C23A-OP{Slt:12-Ax:X}size',
+#
+#fe_xg = PVPositioner(setpoint='FE:C23A-OP{Slt:12-Ax:X}size',
 #                     readback='FE:C23A-OP{Slt:12-Ax:X}t2.C',
 #                     stop='FE:C23A-CT{MC:1}allstop',
-#                     stop_val=1, put_complete=True,
+#                     stop_val=1,
+#                     put_complete=True,
 #                     name='fe_xg')
-
-#fe_yg = PVPositioner('FE:C23A-OP{Slt:12-Ax:Y}size',
+#
+#fe_yg = PVPositioner(setpoint='FE:C23A-OP{Slt:12-Ax:Y}size',
 #                     readback='FE:C23A-OP{Slt:12-Ax:Y}t2.C',
 #                     stop='FE:C23A-CT{MC:1}allstop',
 #                     stop_val=1,
 #                     put_complete=True,
-#                     name='fe_y
+#                     name='fe_y')
+#
+
+

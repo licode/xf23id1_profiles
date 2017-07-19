@@ -1,4 +1,5 @@
 
+
 from ophyd import (EpicsScaler, EpicsSignal, EpicsSignalRO, Device, SingleTrigger, HDF5Plugin,
 			   ImagePlugin, StatsPlugin, ROIPlugin, TransformPlugin)
 from ophyd.areadetector.filestore_mixins import FileStoreHDF5IterativeWrite
@@ -51,6 +52,25 @@ uw_temp = EpicsSignal('UT:SB1-Cu:1{}T:Spply_Ld-I',name='uw_temp')
 angX = EpicsSignal('XF:23ID-ID{BPM}Val:AngleXS-I',name='angX')
 
 angY = EpicsSignal('XF:23ID-ID{BPM}Val:AngleYS-I',name='angY')
+
+#EPU1 positions for commissioning
+epu1_x_off = EpicsSignal('SR:C31-{AI}23:FPGA:x_mm-I',name='epu1_x_off')
+
+epu1_x_ang = EpicsSignal('SR:C31-{AI}23:FPGA:x_mrad-I',name='epu1_x_ang')
+
+epu1_y_off = EpicsSignal('SR:C31-{AI}23:FPGA:y_mm-I',name='epu1_y_off')
+
+epu1_y_ang = EpicsSignal('SR:C31-{AI}23:FPGA:y_mrad-I',name='epu1_y_ang')
+
+
+#EPU2 positions for commissioning
+epu2_x_off = EpicsSignal('SR:C31-{AI}23-2:FPGA:x_mm-I',name='epu2_x_off')
+
+epu2_x_ang = EpicsSignal('SR:C31-{AI}23-2:FPGA:x_mrad-I',name='epu2_x_ang')
+
+epu2_y_off = EpicsSignal('SR:C31-{AI}23-2:FPGA:y_mm-I',name='epu2_y_off')
+
+epu2_y_ang = EpicsSignal('SR:C31-{AI}23-2:FPGA:y_mrad-I',name='epu2_y_ang')
 
 
 # CSX-1 Scalar
@@ -114,7 +134,7 @@ class PrototypeEpicsScaler(Device):
 sclr = PrototypeEpicsScaler('XF:23ID1-ES{Sclr:1}', name='sclr')
 for sig in sclr.channels.signal_names:
     getattr(sclr.channels, sig).name = 'sclr_' + sig.replace('an', '')
-    
+
 def sclr_to_monitor_mode(sclr, count_time):
     # remeber sclr.auto_count_delay
     yield from bp.mv(sclr.auto_count_time, count_time)
@@ -157,12 +177,12 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
         return int(self.parent.cam.num_images.get())
 
 
-class HDF5PluginWithFileStoreUsingCustomEnable(HDF5PluginWithFileStore):
-
-    # As in HDF5PluginWithFileStore, we customize how we find out how
-    # many 2D images constitute one "datum".
-    def get_frames_per_point(self):
-        return int(self.parent.plugin_num_images.get())
+#class HDF5PluginWithFileStoreUsingCustomEnable(HDF5PluginWithFileStore):
+#
+#    # As in HDF5PluginWithFileStore, we customize how we find out how
+#    # many 2D images constitute one "datum".
+#    def get_frames_per_point(self):
+#        return int(self.parent.plugin_num_images.get())
 
 
 class TriggerUsingCustomEnable(SingleTrigger):
@@ -174,8 +194,8 @@ class TriggerUsingCustomEnable(SingleTrigger):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._acquisition_signal = self.enable
-        self.stage_sigs.pop(self.cam.acquire)
-        self.stage_sigs.pop(self.cam.image_mode)
+        self.stage_sigs.pop('cam.acquire')
+        self.stage_sigs.pop('cam.image_mode')
         self._acquisition_signal.subscribe(self._acquire_changed)
 
     def stage(self):
@@ -204,8 +224,8 @@ class ProductionCamBase(AreaDetector):
     proc1 = Cpt(ProcessPlugin, 'Proc1:')
     proc2 = Cpt(ProcessPlugin, 'Proc2:')
 
-    fccdproc1 = Cpt(PluginBase, 'FastCCD1:')
-    fccdproc2 = Cpt(PluginBase, 'FastCCD2:')
+    #fccdproc1 = Cpt(PluginBase, 'FastCCD1:')
+    #fccdproc2 = Cpt(PluginBase, 'FastCCD2:')
 
     acquire_time = ADComponent(EpicsSignalWithRBV, 'cam1:AcquireTime')
 
@@ -215,41 +235,74 @@ class ProductionCamBase(AreaDetector):
         super().__init__(*arg, **kwargs)
 
 
+
 class ProductionCamStandard(SingleTrigger, ProductionCamBase):
     # plugin_num_images = ADComponent(EpicsSignalWithRBV, 'cam1:NumImages')
     # num_images_captured = Cpt(EpicsSignalRO, 'cam1:NumImages')  # not needed?
 
     hdf5 = Cpt(HDF5PluginWithFileStore,
                suffix='HDF1:',
-               write_path_template='/GPFS/xf23id/xf23id1/fccd_data/%Y/%m/%d/')
+               write_path_template='/GPFS/xf23id/xf23id1/fccd_data/%Y/%m/%d/',
+               root='/GPFS/xf23id/xf23id1/',
+               fs=db.event_sources[0].fs)
 
 
-class ProductionCamCustom(TriggerUsingCustomEnable, ProductionCamBase):
-    enable = ADComponent(EpicsSignalWithRBV, 'FastCCD1:EnableOutput')
+#class ProductionCamCustom(TriggerUsingCustomEnable, ProductionCamBase):
+class ProductionCamCustom(ProductionCamBase):
+    #enable = ADComponent(EpicsSignalWithRBV, 'FastCCD1:EnableOutput')
 
-    plugin_num_images = ADComponent(EpicsSignalWithRBV, 'FastCCD1:NumImages')  # used by FileStore to record frame_per_point
-    # The custom signal `plugin_num_images` plays the role that
+    #plugin_num_images = ADComponent(EpicsSignalWithRBV, 'FastCCD1:NumImages')  # used by FileStore to record frame_per_point
+
+    ## The custom signal `plugin_num_images` plays the role that
     # `hdf5.num_capture` normally plays in providing 'frame_per_point'
     # to the FileStore resource document.
 
     # num_images_captured =  Cpt(EpicsSignalRO, 'HDF1:NumCaptured_RBV')  # not needed?
 
-    hdf5 = Cpt(HDF5PluginWithFileStoreUsingCustomEnable,
+    hdf5 = Cpt(HDF5PluginWithFileStore,#UsingCustomEnable
                suffix='HDF1:',
-               write_path_template='/GPFS/xf23id/xf23id1/fccd_data/%Y/%m/%d/')
+               write_path_template='/GPFS/xf23id/xf23id1/fccd_data/%Y/%m/%d/',
+               root='/GPFS/xf23id/xf23id1/',
+               fs=db.event_sources[0].fs)
+
+    def stop(self):
+        self.hdf5.capture.put(0)
+        super().stop()
+
+    def pause(self):
+        self.hdf5.capture.put(0)
+        super().pause()
 
 
 class TestCam(SingleTrigger, AreaDetector):
     "writes data to test driectory"
     hdf5 = Cpt(HDF5PluginWithFileStore,
                    suffix='HDF1:',
-                   write_path_template='/GPFS/xf23id/xf23id1/test_data/%Y/%m/%d/')
+                   write_path_template='/GPFS/xf23id/xf23id1/test_data/%Y/%m/%d/',
+                   root='/GPFS/xf23id/xf23id1/',
+                   fs=db.event_sources[0].fs)
                    # The trailing '/' is essential!!
 
 
 diag3 = StandardCam('XF:23ID1-BI{Diag:3-Cam:1}', name='diag3')
-diag5 = StandardCam('XF:23ID1-BI{Diag:5-Cam:1}', name='diag5')
+#diag5 = StandardCam('XF:23ID1-BI{Diag:5-Cam:1}', name='diag5') #this is for the cube diag for now (es_diag_cam_2)
 diag6 = NoStatsCam('XF:23ID1-BI{Diag:6-Cam:1}', name='diag6')
+
+
+# for aligning im MuR mode - TODO replace PV with better description
+cube_beam = StandardCam('XF:23ID1-BI{Diag:5-Cam:1}', name='cube_beam')
+
+cube_beam.read_attrs = ['stats1']
+cube_beam.stats1.read_attrs = ['total']
+cube_beam.read_attrs.append('stats2')
+cube_beam.stats2.read_attrs = ['total']
+cube_beam.read_attrs.append('stats3')
+cube_beam.stats3.read_attrs = ['total']
+cube_beam.read_attrs.append('stats4')
+cube_beam.stats4.read_attrs = ['total']
+cube_beam.read_attrs.append('stats5')
+cube_beam.stats5.read_attrs = ['total']
+
 
 dif_beam = StandardCam('XF:23ID1-ES{Dif-Cam:Beam}', name='dif_beam')
 # fs1 = StandardCam('XF:23IDA-BI:1{FS:1-Cam:1}', name='fs1')
@@ -264,6 +317,7 @@ dif_beam.read_attrs.append('stats4')
 dif_beam.stats4.read_attrs = ['total']
 dif_beam.read_attrs.append('stats5')
 dif_beam.stats5.read_attrs = ['total']
+
 
 
 # Princeton CCD camera
@@ -286,6 +340,9 @@ class FastShutter(Device):
 fccd = ProductionCamCustom('XF:23ID1-ES{FCCD}', name='fccd')
 fccd.read_attrs = ['hdf5']
 fccd.hdf5.read_attrs = []
+fccd.configuration_attrs = ['cam.acquire_time',
+                            'cam.acquire_period']
+#                            'plugin_num_images']
 
 ## Adding useful info..
 fccd.read_attrs.append('acquire_time')
@@ -307,9 +364,13 @@ fccd.stats4.read_attrs = ['total']
 fccd.read_attrs.append('stats5')
 fccd.stats5.read_attrs = ['total']
 
-# Test CCD
 
-ccdtest = TestCam('XF:23ID1-ES{Tst-Cam:1}', name='ccdtest')
+# CM commented on 2017_07_05 due to connection error preventing BSUI to
+# start suitably..
+#
+## Test CCD
+#
+# ccdtest = TestCam('XF:23ID1-ES{Tst-Cam:1}', name='ccdtest')
 
 import time as ttime
 import epics
@@ -362,24 +423,24 @@ class WaveformCollector:
     def _finish(self):
         self.ready = True
         if self._cb is not None:
-            self._cb()
-            self._cb = None
+           self._cb()
+           self._cb = None
 
     def collect(self):
         self.stop()
         payload = self._get_wfrm()
         if payload is None:
-            return
+           return
 
         for i,v in enumerate(payload):
-            if self._data_is_time:
+           if self._data_is_time:
                 x = v;
-            else:
+           else:
                 x = i;
-            ev = {'data': {self._name: x},
+           ev = {'data': {self._name: x},
                   'timestamps': {self._name: v},
-                  'time': v}
-            yield ev
+                 'time': v}
+           yield ev
 
     def stop(self):
         self._pv_sel.put(0, wait=True) # Stop Collection

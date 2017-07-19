@@ -18,7 +18,7 @@ db = Broker(mds, FileStore({'host': 'xf23id-broker',
                             'database': 'filestore',
                             'port': 27017}))
 
-register_builtin_handlers(db.fs)
+register_builtin_handlers(db.event_sources[0].fs)
 
 get_events = db.get_events
 get_images = db.get_images
@@ -30,7 +30,7 @@ process = db.process
 # Subscribe metadatastore to documents.
 # If this is removed, data is not saved to metadatastore.
 from bluesky.global_state import gs
-gs.RE.subscribe_lossless('all', mds.insert)
+gs.RE.subscribe_lossless('all', db.insert)
 
 # At the end of every run, verify that files were saved and
 # print a confirmation message.

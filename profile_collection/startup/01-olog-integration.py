@@ -22,5 +22,5 @@ def fault_tolerant_olog(name, doc):
     except Exception as exc:
         print('olog error ignored:', exc)
 
-RE.subscribe('start', fault_tolerant_olog)  ## olog problem -> uncomment when it will
+# RE.subscribe('start', fault_tolerant_olog)  ## olog problem -> uncomment when it will
 # stop hunging..

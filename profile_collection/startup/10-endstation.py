@@ -44,7 +44,7 @@ temp_sp = Lakeshore336('XF:23ID1-ES{TCtrl:1-Out:1}')
 
 sm = VIMeter('XF:23ID1-ES{K2611:1}', name='sm')
 
-
+# THE BELOW WAS THE OLDER WAY
 #sm_i = PVPositioner('XF:23ID1-ES{K2611:1}Val:RB-I',name='sm_i')
 #	('XF:23ID1-ES{K2611:1}Val:SP-I',
 #                  readback='XF:23ID1-ES{K2611:1}Val:RB-I',

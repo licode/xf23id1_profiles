@@ -24,6 +24,7 @@ m3a = MotorMirror('XF:23ID1-OP{Mir:3',  name='m3a') # Fast CCD Shutter sh_y = Ep
 
 # Slits
 
+#slt0 = SlitsPrimary('FE:C23A-OP{Slt:12-', name='slt0')
 slt1 = SlitsGapCenter('XF:23ID1-OP{Slt:1', name='slt1')
 slt2 = SlitsGapCenter('XF:23ID1-OP{Slt:2', name='slt2')
 slt3 = SlitsXY('XF:23ID1-OP{Slt:3', name='slt3')
@@ -41,3 +42,17 @@ diag6_y = EpicsMotor('XF:23ID1-BI{Diag:6-Ax:Y}Mtr', name='diag6_y')
 
 
 diag6_pid = PID('XF:23ID', name='diag6_pid')
+
+
+
+# FCCD slow shutter
+ssh_in = LinearActIn('XF:23IDA-EPS{DP:1-Sh:1}', name='ssh_in')
+ssh_out = LinearActOut('XF:23IDA-EPS{DP:1-Sh:1}', name='ssh_out')
+
+# Diags Diffractometer Cube
+flux_in = LinearActIn('XF:23ID1-ES{Dif-FS}', name='flux_in')
+flux_out = LinearActOut('XF:23ID1-ES{Dif-FS}', name='flux_out')
+yag_cube_in = LinearActIn('XF:23ID1-EPS{Dif-Abs}', name='yag_cube_in')
+yag_cube_out = LinearActOut('XF:23ID1-EPS{Dif-Abs}', name='yag_cube_out')
+
+

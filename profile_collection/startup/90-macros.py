@@ -1,7 +1,6 @@
 from epics import caget, caput
 import time
 
-
 def shclose():
     #caput('XF:23ID1-VA{Diag:06-GV:1}Cmd:Cls-Cmd', 1, wait=True)  # wears our valve. don't use
     #caput('XF:23ID1-PPS{PSh}Cmd:Cls-Cmd', 1, wait=True) 	  # use if DP:1-Sh:1 is broken

@@ -53,6 +53,59 @@ class PGM(Device):
 
 # Slits
 
+## Old
+# Front End Slits (Primary Slits)
+#
+#fe_xc = PVPositioner(setpoint='FE:C23A-OP{Slt:12-Ax:X}center',
+#                     readback='FE:C23A-OP{Slt:12-Ax:X}t2.D',
+#                     stop='FE:C23A-CT{MC:1}allstop',
+#                     stop_val=1,
+#                     put_complete=True,
+#                     name='fe_xc')
+#
+#fe_yc = PVPositioner(setpoint='FE:C23A-OP{Slt:12-Ax:Y}center',
+#                     readback='FE:C23A-OP{Slt:12-Ax:Y}t2.D',
+#                     stop='FE:C23A-CT{MC:1}allstop',
+#                     stop_val=1,
+#                     put_complete=True,
+#                     name='fe_yc')
+#
+#fe_xg = PVPositioner(setpoint='FE:C23A-OP{Slt:12-Ax:X}size',
+#                     readback='FE:C23A-OP{Slt:12-Ax:X}t2.C',
+#                     stop='FE:C23A-CT{MC:1}allstop',
+#                     stop_val=1,
+#                     put_complete=True,
+#                     name='fe_xg')
+#
+#fe_yg = PVPositioner(setpoint='FE:C23A-OP{Slt:12-Ax:Y}size',
+#                     readback='FE:C23A-OP{Slt:12-Ax:Y}t2.C',
+#                     stop='FE:C23A-CT{MC:1}allstop',
+#                     stop_val=1,
+#                     put_complete=True,
+#                     name='fe_y')
+#
+
+#class SlitsPrimarySubclassCen(PVPositioner):
+#    setpoint = '}center'
+#    readback = 't2.D'
+#    stop = 'FE:C23A-CT{MC:1}allstop'
+#    stop_val = 1
+#    put_complete = True
+#
+#class SlitsPrimarySubclassGap(PVPositioner):
+#    setpoint = '}size'
+#    readback = 't2.C'
+#    stop = 'FE:C23A-CT{MC:1}allstop'
+#    stop_val = 1
+#    put_complete = True
+#
+#class SlitsPrimary(Device):
+#    xc = SlitsPrimarySubclassCen('FE:C23A-OP{Slt:12-Ax:X')
+#    xg = SlitsPrimarySubclassGap('FE:C23A-OP{Slt:12-Ax:X')
+#    yc = SlitsPrimarySubclassCen('FE:C23A-OP{Slt:12-Ax:Y')
+#    yg = SlitsPrimarySubclassGap('FE:C23A-OP{Slt:12-Ax:Y')
+
+
 class SlitsGapCenter(Device):
     xg = Cpt(EpicsMotor, '-Ax:XGap}Mtr')
     xc = Cpt(EpicsMotor, '-Ax:XCtr}Mtr')
@@ -82,7 +135,7 @@ class PID(PVPositioner):
     #XF:23IDA-OP:1{Mir:1}MOVE_CMD.PROC
     #actuate = Cpt(EpicsSignal, '{Mir:1B}MOVE_CMD.PROC')
     actuate = Cpt(EpicsSignal, 'A-OP:1{Mir:1}MOVE_CMD.PROC')
-    actual_value = 1
+    actuate_value = 1  #was actual_value but this is not a valid argument
     #stop_signal= Cpt(EpicsSignal, ':2{Mir:1B}STOP_CMD.PROC')
     stop_signal= Cpt(EpicsSignal, 'A-OP:1{Mir:1}STOP_CMD.PROC')
     stop_value = 1
@@ -147,7 +200,7 @@ class LakeshoreChannel(Device):
         super().__init__(*args, read_attrs=read_attrs, **kwargs)
 
 from collections import deque
-        
+
 class Lakeshore336Picky(Device):
     setpoint = Cpt(EpicsSignal, read_pv='-Out:1}T-RB', write_pv='-Out:1}T-SP',
                    add_prefix=('read_pv', 'write_pv'))
@@ -156,7 +209,7 @@ class Lakeshore336Picky(Device):
     ramp_enabled = Cpt(EpicsSignal, '-Out:1}Enbl:Ramp-Sel')
     ramp_rate = Cpt(EpicsSignal, read_pv='-Out:1}Val:Ramp-RB', write_pv='-Out:1}Val:Ramp-SP',
                     add_prefix=('read_pv', 'write_pv'))
-    
+
     chanA = Cpt(LakeshoreChannel, '-Chan:A}')
     chanB = Cpt(LakeshoreChannel, '-Chan:B}')
 
@@ -165,7 +218,7 @@ class Lakeshore336Picky(Device):
         super().__init__(*args, **kwargs)
         # status object for communication
         self._done_sts = None
-        
+
         # state for deciding if we are done or not
         self._cache = deque()
         self._start_time = 0
@@ -175,34 +228,34 @@ class Lakeshore336Picky(Device):
         # longest we can wait before giving up
         self._timeout = timeout
         self._lagtime = 120
-        
+
         # the channel to watch to see if we are done
         self._target_channel = target
 
         # parameters for done testing
         self.mean_thresh = .01
         self.ptp_thresh = .1
-        
+
     def _value_cb(self, value, timestamp, **kwargs):
         self._cache.append((value, timestamp))
-        
+
         if (timestamp - self._cache[0][1]) < self._lagtime / 2:
             return
-        
+
         while (timestamp - self._cache[0][1]) > self._lagtime:
             self._cache.popleft()
-            
+
         buff = np.array([v[0] for v in self._cache])
         if self._done_test(self._setpoint, buff):
             self._done_sts._finished()
             self._reset()
-            
+
     def _setpoint_cb(value, **kwargs):
         print('in cb', value)
         if value == self._setpoint:
             self._done_sts._finished()
             self.setpoint.clear_sub(self._setpoint_cb, 'value')
-            
+
     def _reset(self):
         if self._target_channel == 'setpoint':
             target = self.setpoint
@@ -213,7 +266,7 @@ class Lakeshore336Picky(Device):
         self._done_sts = None
         self._setpoint = None
         self._cache.clear()
-            
+
     def _done_test(self, target, buff):
         mn = np.mean(np.abs(buff - target))
 
@@ -224,7 +277,7 @@ class Lakeshore336Picky(Device):
             return False
 
         return True
-        
+
 
     def set(self, new_position, *, timeout=None):
         # to be subscribed to 'value' cb on readback
@@ -233,11 +286,11 @@ class Lakeshore336Picky(Device):
             self._done_sts._finished()
             self._done_sts = None
             return sts
-        
+
         self._setpoint = new_position
-        
+
         self.setpoint.set(self._setpoint)
-        
+
 
 
         # todo, set up subscription forwarding
@@ -246,7 +299,7 @@ class Lakeshore336Picky(Device):
         else:
             target = getattr(self, self._target_channel).T
             target.subscribe(self._value_cb, 'value')
-        
+
         return self._done_sts
 
 # Current-Voltage meter, driven in current mode
@@ -274,7 +327,7 @@ class VIMeter(Device):
     #ohm = Cpt(VIMeterVirtualMotorOhm, '')
 
 
-# Vortex MCA
+# Vortex MCA - saturn dxp and not Xpress3
 
 class Vortex(Device):
     mca = Cpt(EpicsMCA, 'mca1')
@@ -283,3 +336,27 @@ class Vortex(Device):
     @property
     def trigger_signals(self):
         return [self.mca.erase_start]
+
+class LinearActOut(PVPositioner):
+    readback = Cpt(EpicsSignalRO, 'Pos-Sts')
+    setpoint = Cpt(EpicsSignal, 'Cmd:Out-Cmd')
+    done = Cpt(EpicsSignalRO, 'Sw:OutLim-Sts')
+    done_val = 0 # for some reason this is how the logic .  limit activated and logic turns to 0
+
+    #def set(self, val):  # this suggestion from tom does not fix already out issue
+    #    if self.done.get() == self.done_val:
+    #        return DeviceStatus(self, done=True, success=True)
+    #    return super().set(val)
+
+class LinearActIn(PVPositioner):
+    readback = Cpt(EpicsSignalRO, 'Pos-Sts')
+    setpoint = Cpt(EpicsSignal, 'Cmd:In-Cmd')
+    done = Cpt(EpicsSignalRO, 'Sw:InLim-Sts')
+    done_val = 0  #for some reason this logic is backwards. need to fix this.
+
+    #def set(self, val):    # and here, this suggestion from tom commpletely breaks it.
+    #    if self.done.get() == self.done_val:
+    #        return DeviceStatus(self, done=True, success=True)
+    #    return super().set(val)
+
+
