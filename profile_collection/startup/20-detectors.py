@@ -225,9 +225,6 @@ class ProductionCamBase(AreaDetector):
     proc1 = Cpt(ProcessPlugin, 'Proc1:')
     proc2 = Cpt(ProcessPlugin, 'Proc2:')
 
-    #fccdproc1 = Cpt(PluginBase, 'FastCCD1:')
-    #fccdproc2 = Cpt(PluginBase, 'FastCCD2:')
-
     acquire_time = ADComponent(EpicsSignalWithRBV, 'cam1:AcquireTime')
 
     # This does nothing, but it's the right place to add code to be run
@@ -236,10 +233,7 @@ class ProductionCamBase(AreaDetector):
         super().__init__(*arg, **kwargs)
 
 
-
 class ProductionCamStandard(SingleTrigger, ProductionCamBase):
-    # plugin_num_images = ADComponent(EpicsSignalWithRBV, 'cam1:NumImages')
-    # num_images_captured = Cpt(EpicsSignalRO, 'cam1:NumImages')  # not needed?
 
     hdf5 = Cpt(HDF5PluginWithFileStore,
                suffix='HDF1:',
@@ -250,16 +244,8 @@ class ProductionCamStandard(SingleTrigger, ProductionCamBase):
 
 # class ProductionCamCustom(TriggerUsingCustomEnable, ProductionCamBase):
 class ProductionCamCustom(ProductionCamBase):
-    #enable = ADComponent(EpicsSignalWithRBV, 'FastCCD1:EnableOutput')
 
-    #plugin_num_images = ADComponent(EpicsSignalWithRBV, 'FastCCD1:NumImages')  # used by FileStore to record frame_per_point
-
-    ## The custom signal `plugin_num_images` plays the role that
-    # `hdf5.num_capture` normally plays in providing 'frame_per_point'
     # to the FileStore resource document.
-
-    # num_images_captured =  Cpt(EpicsSignalRO, 'HDF1:NumCaptured_RBV')  # not needed?
-
     hdf5 = Cpt(HDF5PluginWithFileStore,  # UsingCustomEnable
                suffix='HDF1:',
                write_path_template='/GPFS/xf23id/xf23id1/fccd_data/%Y/%m/%d/',
