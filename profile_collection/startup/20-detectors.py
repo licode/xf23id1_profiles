@@ -173,13 +173,6 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
     # AD v2.2.0 (at least) does not have this. It is present in v1.9.1.
     file_number_sync = None
 
-    # By defeault, FileStoreHDF5 relies on the signal hdf5.num_capture
-    # to determine how many "frames" (2D images) are in a given "point"
-    # (datum document in FileStore). This breaks if we capture in
-    # "Stream" mode, in which hdf5.num_capture is always 0 (meaning, I
-    # guess, undefined. Thanks, EPICS). We'll use a different signal.
-    def get_frames_per_point(self):
-        return int(self.parent.cam.num_images.get())
 
 
 #class HDF5PluginWithFileStoreUsingCustomEnable(HDF5PluginWithFileStore):
