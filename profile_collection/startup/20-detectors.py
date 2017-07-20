@@ -225,8 +225,6 @@ class ProductionCamBase(AreaDetector):
     proc1 = Cpt(ProcessPlugin, 'Proc1:')
     proc2 = Cpt(ProcessPlugin, 'Proc2:')
 
-    acquire_time = ADComponent(EpicsSignalWithRBV, 'cam1:AcquireTime')
-
     # This does nothing, but it's the right place to add code to be run
     # once at instantiation time.
     def __init__(self, *arg, **kwargs):
@@ -333,8 +331,6 @@ fccd.configuration_attrs = ['cam.acquire_time',
                             'cam.acquire_period']
 #                            'plugin_num_images']
 
-## Adding useful info..
-fccd.read_attrs.append('acquire_time')
 # StandardCam does not have these; only Custom does. Add them
 # to read_attrs only if they are present.
 if 'num_images_captured' in fccd.signal_names:
