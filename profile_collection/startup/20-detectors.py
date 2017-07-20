@@ -10,6 +10,14 @@ from ophyd import AreaDetector
 from bluesky.examples import NullStatus
 from collections import OrderedDict
 import bluesky.plans as bp
+
+
+def _setup_stats(cam_in):
+    for k in (f'stats{j}' for j in range(1, 6)):
+        cam_in.read_attrs.append(k)
+        getattr(cam_in, k).read_attr = ['total']
+
+
 # Ring current
 
 # TODO Make this a Device so it can be used by bluesky.
@@ -236,32 +244,12 @@ diag6 = NoStatsCam('XF:23ID1-BI{Diag:6-Cam:1}', name='diag6')
 # for aligning im MuR mode - TODO replace PV with better description
 cube_beam = StandardCam('XF:23ID1-BI{Diag:5-Cam:1}', name='cube_beam')
 
-cube_beam.read_attrs = ['stats1']
-cube_beam.stats1.read_attrs = ['total']
-cube_beam.read_attrs.append('stats2')
-cube_beam.stats2.read_attrs = ['total']
-cube_beam.read_attrs.append('stats3')
-cube_beam.stats3.read_attrs = ['total']
-cube_beam.read_attrs.append('stats4')
-cube_beam.stats4.read_attrs = ['total']
-cube_beam.read_attrs.append('stats5')
-cube_beam.stats5.read_attrs = ['total']
-
+_setup_stats(cube_beam)
 
 dif_beam = StandardCam('XF:23ID1-ES{Dif-Cam:Beam}', name='dif_beam')
 # fs1 = StandardCam('XF:23IDA-BI:1{FS:1-Cam:1}', name='fs1')
 
-dif_beam.read_attrs = ['stats1']
-dif_beam.stats1.read_attrs = ['total']
-dif_beam.read_attrs.append('stats2')
-dif_beam.stats2.read_attrs = ['total']
-dif_beam.read_attrs.append('stats3')
-dif_beam.stats3.read_attrs = ['total']
-dif_beam.read_attrs.append('stats4')
-dif_beam.stats4.read_attrs = ['total']
-dif_beam.read_attrs.append('stats5')
-dif_beam.stats5.read_attrs = ['total']
-
+_setup_stats(dif_beam)
 
 # Princeton CCD camera
 
@@ -288,11 +276,7 @@ fccd.hdf5.read_attrs = []
 fccd.configuration_attrs = ['cam.acquire_time',
                             'cam.acquire_period',
                             'cam.image_mode']
-
-for k in (f'stats{j}' for j in range(1, 6)):
-    fccd.read_attrs.append(k)
-    getattr(fccd, k).read_attr = ['total']
-
+_setup_stats(fccd)
 
 # CM commented on 2017_07_05 due to connection error preventing BSUI to
 # start suitably..
