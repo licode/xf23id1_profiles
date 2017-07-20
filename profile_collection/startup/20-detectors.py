@@ -525,4 +525,4 @@ vortex = Vortex('XF:23ID1-ES{Vortex}', name='vortex')
 vortex.read_attrs = ['mca.spectrum', 'mca.preset_live_time', 'mca.rois']
 vortex.mca.read_attrs.append('rois')
 vortex.mca.rois.read_attrs = ['roi0', 'roi1', 'roi2', 'roi3', 'roi4']
-#gs.TABLE_COLS = ['vortex_mca_rois_roi4_count']; gs.PLOT_Y = 'vortex_mca_rois_roi4_count'
+# gs.TABLE_COLS = ['vortex_mca_rois_roi4_count']; gs.PLOT_Y = 'vortex_mca_rois_roi4_count'
