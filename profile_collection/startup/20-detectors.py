@@ -15,7 +15,7 @@ import bluesky.plans as bp
 def _setup_stats(cam_in):
     for k in (f'stats{j}' for j in range(1, 6)):
         cam_in.read_attrs.append(k)
-        getattr(cam_in, k).read_attr = ['total']
+        getattr(cam_in, k).read_attrs = ['total']
 
 
 # Ring current
@@ -181,6 +181,9 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
     # AD v2.2.0 (at least) does not have this. It is present in v1.9.1.
     file_number_sync = None
 
+    def get_frames_per_point(self):
+        return self.parent.cam.num_images.get()
+
 
 class ProductionCamBase(AreaDetector):
     # # Trying to add useful info..
@@ -275,8 +278,14 @@ fccd.read_attrs = ['hdf5']
 fccd.hdf5.read_attrs = []
 fccd.configuration_attrs = ['cam.acquire_time',
                             'cam.acquire_period',
-                            'cam.image_mode']
+                            'cam.image_mode',
+                            'cam.num_images']
 _setup_stats(fccd)
+# to not break downstream analysis yet
+fccd.read_attrs.append('cam.acquire_time')
+fccd.read_attrs.append('cam.acquire_period')
+fccd.read_attrs.append('cam.num_images')
+
 
 # CM commented on 2017_07_05 due to connection error preventing BSUI to
 # start suitably..
