@@ -174,41 +174,6 @@ class HDF5PluginWithFileStore(HDF5Plugin, FileStoreHDF5IterativeWrite):
     file_number_sync = None
 
 
-
-#class HDF5PluginWithFileStoreUsingCustomEnable(HDF5PluginWithFileStore):
-#
-#    # As in HDF5PluginWithFileStore, we customize how we find out how
-#    # many 2D images constitute one "datum".
-#    def get_frames_per_point(self):
-#        return int(self.parent.plugin_num_images.get())
-
-
-class TriggerUsingCustomEnable(SingleTrigger):
-    """
-    Do not disrupt acquisition or touch the 'acquire' signal.
-    Instead, flip the custom 'enable' switch added by Stuart in
-    January 2016.
-    """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._acquisition_signal = self.enable
-        self.stage_sigs.pop('cam.acquire')
-        self.stage_sigs.pop('cam.image_mode')
-        self._acquisition_signal.subscribe(self._acquire_changed)
-
-    def stage(self):
-        if self.cam.image_mode.get(as_string=True) != 'Continuous':
-            raise RuntimeError(
-                "Detector must be in Continuous before scan is begun.")
-        if self.cam.trigger_mode.get(as_string=True) != 'Internal':
-            raise RuntimeError(
-                "Detector trigger mode must be Internal before scan is begun.")
-        if self.cam.acquire.get() != 1:
-            raise RuntimeError(
-                "Detector must in be acquire mode before scan is begun.")
-        super().stage()
-
-
 class ProductionCamBase(AreaDetector):
     # # Trying to add useful info..
     stats1 = Cpt(StatsPlugin, 'Stats1:')
@@ -234,17 +199,6 @@ class ProductionCamBase(AreaDetector):
 class ProductionCamStandard(SingleTrigger, ProductionCamBase):
 
     hdf5 = Cpt(HDF5PluginWithFileStore,
-               suffix='HDF1:',
-               write_path_template='/GPFS/xf23id/xf23id1/fccd_data/%Y/%m/%d/',
-               root='/GPFS/xf23id/xf23id1/',
-               fs=db.event_sources[0].fs)
-
-
-# class ProductionCamCustom(TriggerUsingCustomEnable, ProductionCamBase):
-class ProductionCamCustom(ProductionCamBase):
-
-    # to the FileStore resource document.
-    hdf5 = Cpt(HDF5PluginWithFileStore,  # UsingCustomEnable
                suffix='HDF1:',
                write_path_template='/GPFS/xf23id/xf23id1/fccd_data/%Y/%m/%d/',
                root='/GPFS/xf23id/xf23id1/',
@@ -324,7 +278,7 @@ class FastShutter(Device):
         self.shutter.put(0)
 
 
-fccd = ProductionCamCustom('XF:23ID1-ES{FCCD}', name='fccd')
+fccd = ProductionCamStandard('XF:23ID1-ES{FCCD}', name='fccd')
 fccd.read_attrs = ['hdf5']
 fccd.hdf5.read_attrs = []
 fccd.configuration_attrs = ['cam.acquire_time',
