@@ -289,16 +289,9 @@ fccd.configuration_attrs = ['cam.acquire_time',
                             'cam.acquire_period',
                             'cam.image_mode']
 
-fccd.read_attrs.append('stats1')
-fccd.stats1.read_attrs = ['total']
-fccd.read_attrs.append('stats2')
-fccd.stats2.read_attrs = ['total']
-fccd.read_attrs.append('stats3')
-fccd.stats3.read_attrs = ['total']
-fccd.read_attrs.append('stats4')
-fccd.stats4.read_attrs = ['total']
-fccd.read_attrs.append('stats5')
-fccd.stats5.read_attrs = ['total']
+for k in (f'stats{j}' for j in range(1, 6)):
+    fccd.read_attrs.append(k)
+    getattr(fccd, k).read_attr = ['total']
 
 
 # CM commented on 2017_07_05 due to connection error preventing BSUI to
