@@ -331,12 +331,6 @@ fccd.configuration_attrs = ['cam.acquire_time',
                             'cam.acquire_period']
 #                            'plugin_num_images']
 
-# StandardCam does not have these; only Custom does. Add them
-# to read_attrs only if they are present.
-if 'num_images_captured' in fccd.signal_names:
-    fccd.read_attrs.append('num_images_captured')
-if 'plugin_num_images' in fccd.signal_names:
-    fccd.read_attrs.append('plugin_num_images')
 
 fccd.read_attrs.append('stats1')
 fccd.stats1.read_attrs = ['total']
