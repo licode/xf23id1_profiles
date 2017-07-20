@@ -206,11 +206,15 @@ class ProductionCamStandard(SingleTrigger, ProductionCamBase):
 
     def stop(self):
         self.hdf5.capture.put(0)
-        super().stop()
+        return super().stop()
 
     def pause(self):
         self.hdf5.capture.put(0)
-        super().pause()
+        return super().pause()
+
+    def resume(self):
+        self.hdf5.capture.put(1)
+        return super().resume()
 
 
 class TestCam(SingleTrigger, AreaDetector):
