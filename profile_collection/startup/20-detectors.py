@@ -286,9 +286,8 @@ fccd = ProductionCamStandard('XF:23ID1-ES{FCCD}', name='fccd')
 fccd.read_attrs = ['hdf5']
 fccd.hdf5.read_attrs = []
 fccd.configuration_attrs = ['cam.acquire_time',
-                            'cam.acquire_period']
-#                            'plugin_num_images']
-
+                            'cam.acquire_period',
+                            'cam.image_mode']
 
 fccd.read_attrs.append('stats1')
 fccd.stats1.read_attrs = ['total']
