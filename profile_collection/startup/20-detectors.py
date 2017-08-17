@@ -32,6 +32,10 @@ diag6_monitor = EpicsSignal('XF:23ID1-BI{Diag:6-Cam:1}Stats1:Total_RBV',
 # diag6_raw4 = EpicsSignal('XF:23ID1-BI{Diag:6-Cam:1}Stats4:Total_RBV',
 #                            name='diag6_raw4')
 
+#TODO move this to diag6 area detector
+
+diag6_pid_threshold = EpicsSignal('XF:23ID1-BI{Diag:6-Cam:1}Stats1:CentroidThreshold',name =  'diag6_pid_threshold')
+
 # TODO Make these a Device so it can be used in bluesky.
 mono_tempa = EpicsSignal('XF:23ID1-OP{TCtrl:1-Chan:A}T-I',
                          name='mono_tempa')
@@ -199,7 +203,7 @@ class ProductionCamBase(AreaDetector):
     trans1 = Cpt(TransformPlugin, 'Trans1:')
 
     proc1 = Cpt(ProcessPlugin, 'Proc1:')
-    proc2 = Cpt(ProcessPlugin, 'Proc2:')
+    #proc2 = Cpt(ProcessPlugin, 'Proc2:')
 
     # This does nothing, but it's the right place to add code to be run
     # once at instantiation time.

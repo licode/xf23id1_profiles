@@ -50,9 +50,10 @@ ssh_in = LinearActIn('XF:23IDA-EPS{DP:1-Sh:1}', name='ssh_in')
 ssh_out = LinearActOut('XF:23IDA-EPS{DP:1-Sh:1}', name='ssh_out')
 
 # Diags Diffractometer Cube
-flux_in = LinearActIn('XF:23ID1-ES{Dif-FS}', name='flux_in')
-flux_out = LinearActOut('XF:23ID1-ES{Dif-FS}', name='flux_out')
-yag_cube_in = LinearActIn('XF:23ID1-EPS{Dif-Abs}', name='yag_cube_in')
-yag_cube_out = LinearActOut('XF:23ID1-EPS{Dif-Abs}', name='yag_cube_out')
+yag_cube_in = LinearActIn('XF:23ID1-ES{Dif-FS}', name='yag_cube_in')
+yag_cube_out = LinearActOut('XF:23ID1-ES{Dif-FS}', name='yag_cube_out')
+flux_in = LinearActIn('XF:23ID1-EPS{Dif-Abs}', name='flux_in')
+flux_out = LinearActOut('XF:23ID1-EPS{Dif-Abs}', name='flux_out')
+
 
 

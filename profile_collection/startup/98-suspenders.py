@@ -24,13 +24,11 @@ print('Preparing CSX1 Photon Shutter 1 suspender with 3*60 s recovery time\n\tRE
 ps1_shut_suspender =  SuspendBoolHigh(EpicsSignal('XF:23IDA-PPS:1{PSh}Pos-Sts'),sleep=3*60)
 
 
-
-
 ## It needs:
 ## RE.install_suspender(test_shutsusp)
 ## RE.remove_suspender(test_shutsusp)
 
-RE.install_suspender(ring_suspender)
-RE.install_suspender(fe_shut_suspender)
+#RE.install_suspender(ring_suspender)
+#RE.install_suspender(fe_shut_suspender)
 #RE.install_suspender(ps1_shut_suspender)
 
