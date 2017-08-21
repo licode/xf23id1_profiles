@@ -217,7 +217,7 @@ class ProductionCamStandard(SingleTrigger, ProductionCamBase):
                suffix='HDF1:',
                write_path_template='/GPFS/xf23id/xf23id1/fccd_data/%Y/%m/%d/',
                root='/GPFS/xf23id/xf23id1/',
-               fs=db.event_sources[0].fs)
+               reg=db.reg)
 
     def stop(self):
         self.hdf5.capture.put(0)
@@ -238,7 +238,7 @@ class TestCam(SingleTrigger, AreaDetector):
                suffix='HDF1:',
                write_path_template='/GPFS/xf23id/xf23id1/test_data/%Y/%m/%d/',
                root='/GPFS/xf23id/xf23id1/',
-               fs=db.event_sources[0].fs)
+               reg=db.reg)
     # The trailing '/' is essential!!
 
 
