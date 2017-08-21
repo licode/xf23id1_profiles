@@ -35,3 +35,6 @@ sclr.hints = {'fields': ['sclr_ch2', 'sclr_ch3', 'sclr_ch6']}
 def relabel_fig(fig, new_label):
     fig.set_label(new_label)
     fig.canvas.manager.set_window_title(fig.get_label())
+
+
+fccd.hints = {'fields': ['fccd_stats1_total']}
