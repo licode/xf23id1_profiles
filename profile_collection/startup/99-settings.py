@@ -1,7 +1,3 @@
-from bluesky import SupplementalData
-sd = SupplementalData()
-RE.preprocessors.append(sd)
-
 # interactive use
 sd.monitors = []  # a list of signals to monitor concurrently
 sd.flyers = []  # a list of "flyable" devices
@@ -20,34 +16,10 @@ dets = [sclr]
 
 pgm_en.readback.name = 'energy'
 
-sclr.names.read_attrs=['name1','name2','name3','name4','name5','name6']
+sclr.names.read_attrs=['name1','name2','name3','name4','name5','name6']  # WHAT IS THIS??? - Dan Allan
 sclr.channels.read_attrs=['chan1','chan2','chan3','chan4','chan5','chan6']
 sclr.hints = {'fields': ['sclr_ch2', 'sclr_ch3', 'sclr_ch6']}
 
-
-
-#gs.MASTER_DET = sclr
-#gs.MASTER_DET_FIELD = 'sclr_chan2'
-#
-#
-#gs.TABLE_COLS = ['sclr_chan4']
-#gs.PLOT_Y = 'sclr_chan4'
-
-#gs.DETS.append(ring_curr)
-#gs.DETS.append(nanop)
-#gs.DETS.append(sm_i)
-#gs.DETS.append(sm_v)
-#gs.DETS.append(sm_r)
-#gs.DETS.append(npbx)
-#gs.DETS.append(npby)
-#gs.DETS.append(npbz)
-#gs.DETS.append(nptx)
-#gs.DETS.append(npty)
-#gs.DETS.append(nptz)
-
-#gs.DETS.append(dif_beam_cam)
-#gs.TABLE_COLS =['dif_beam_cam_stats_total3']
-#gs.PLOT_Y='dif_beam_cam_stats_total3'
 
 # for fCCD data saving
 
@@ -56,13 +28,7 @@ sclr.hints = {'fields': ['sclr_ch2', 'sclr_ch3', 'sclr_ch6']}
 #fccd.num_images = 5
 
 
-#gs.TABLE_COLS = ['fccd_stats_total1']
-#gs.PLOT_Y = 'fccd_stats_total1'
-
-
-#ct.flyers = [topoff_inj, fccd_flyer5, diag6_flyer1]   # this only activiates flyers for ct()
-
-#gs.FLYERS = [topoff_inj, fccd_flyer5, diag6_flyer1]   # this is for all scans on ophyd level
+#sd.flyers = [topoff_inj, fccd_flyer5, diag6_flyer1]   # this is for all scans on ophyd level
 
 ### New figure feature
 
