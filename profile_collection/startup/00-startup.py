@@ -33,6 +33,7 @@ get_ipython().register_magics(BlueskyMagics)
 from bluesky.callbacks.best_effort import BestEffortCallback
 bec = BestEffortCallback()
 RE.subscribe(bec)
+bec.disable_baseline()                #display only!
 peaks = bec.peaks  # just as alias for less typing
 
 # At the end of every run, verify that files were saved and
@@ -43,6 +44,8 @@ from bluesky.callbacks.broker import verify_files_saved
 # Import matplotlib and put it in interactive mode.
 import matplotlib.pyplot as plt
 plt.ion()
+import matplotlib as mpl
+mpl.rcParams['axes.grid'] = True      #grid always on
 
 # Make plots update live while scans run.
 from bluesky.utils import install_qt_kicker

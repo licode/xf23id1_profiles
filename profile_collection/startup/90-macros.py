@@ -1,6 +1,8 @@
 from epics import caget, caput
 import time
 
+# TODO review all of 90-macros.py so that things used in plans are OK
+
 def shclose():
     #caput('XF:23ID1-VA{Diag:06-GV:1}Cmd:Cls-Cmd', 1, wait=True)  # wears our valve. don't use
     #caput('XF:23ID1-PPS{PSh}Cmd:Cls-Cmd', 1, wait=True) 	  # use if DP:1-Sh:1 is broken
@@ -180,7 +182,54 @@ def ct_fccd(freq, num_images):
 
 import itertools
 
-def exp_decay(tc, t0=1):
+def exp_decay(tc, t0=1): # TODO - what is this function for?
    c = itertools.count()
    for i in c:
        yield t0 * np.exp(-i/tc)
+
+def led_on():
+    caput('XF:23ID1-ES{LED:1}Sw-Cmd', 1)
+    caput('XF:23ID1-ES{LED:2}Sw-Cmd', 1)
+
+
+def led_off():
+    caput('XF:23ID1-ES{LED:1}Sw-Cmd', 0)
+    caput('XF:23ID1-ES{LED:2}Sw-Cmd', 0)
+
+
+
+# Mono open and closed loop operation..
+#the best conditions/timeframe should be checked first
+
+def MonoOpenLoopAmpOn():
+    caput('XF:23ID1-OP{Mono-Ax:MirP}Cmd:OpnLoop-Cmd', 1)
+    caput('XF:23ID1-OP{Mono-Ax:GrtP}Cmd:OpnLoop-Cmd', 1)
+    sleep(2)
+
+
+def MonoClosedLoop():
+    caput('XF:23ID1-OP{Mono-Ax:MirP}Cmd:Enable-Cmd',1)
+    caput('XF:23ID1-OP{Mono-Ax:GrtP}Cmd:Enable-Cmd',1)
+    sleep(2)
+
+
+def MonoKill():
+    caput('XF:23ID1-OP{Mono-Ax:MirP}Cmd:Kill-Cmd',1)
+    caput('XF:23ID1-OP{Mono-Ax:GrtP}Cmd:Kill-Cmd',1)
+    sleep(2)
+
+
+def MonoState(servost,ampst):
+    if servost==1 and ampst==1:
+        #print('servost =',servost)
+        MonoClosedLoop()
+    if servost==0 and ampst==1:
+        #print('servost =',servost)
+        MonoOpenLoopAmpOn()
+    if servost==0 and ampst==0:
+        #print('servost =',servost)
+        MonoKill()
+    else:
+        print('MonoState(servost,amplst) where 1 turns the servo loop and/or amplifier power.')
+
+

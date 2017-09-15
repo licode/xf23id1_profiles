@@ -6,9 +6,11 @@ from ophyd import Component as Cpt, FormattedComponent as FmtCpt
 
 # These names are not consistent with the PV names on purpose.
 m1a = Mirror('XF:23IDA-OP:1{Mir:1', name='m1a')
-m1b1 = Mirror('XF:23IDA-OP:2{Mir:1A', name='m1b1')
+m1b1 = Mirror('XF:23IDA-OP:2{Mir:1A', name='m1b1')  #TODO do we want to remove m1b1 and 2 from CSX1
 m1b2 = Mirror('XF:23IDA-OP:2{Mir:1B', name='m1b2')
 
+# Add m1a feedback control
+m1a_feedback = EpicsSignal('XF:23ID1-OP{FBck}Sts:FB-Sel', name= 'm1a_feedback')
 
 # VLS-PGM
 
@@ -54,6 +56,7 @@ yag_cube_in = LinearActIn('XF:23ID1-ES{Dif-FS}', name='yag_cube_in')
 yag_cube_out = LinearActOut('XF:23ID1-ES{Dif-FS}', name='yag_cube_out')
 flux_in = LinearActIn('XF:23ID1-ES{Dif-Abs}', name='flux_in')
 flux_out = LinearActOut('XF:23ID1-ES{Dif-Abs}', name='flux_out')
+
 
 
 

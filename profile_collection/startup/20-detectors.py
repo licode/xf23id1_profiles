@@ -21,7 +21,7 @@ def _setup_stats(cam_in):
 # Ring current
 
 # TODO Make this a Device so it can be used by bluesky.
-ring_curr = EpicsSignal('XF:23ID-SR{}I-I', name='ring_curr')
+ring_curr = EpicsSignalRO('XF:23ID-SR{}I-I', name='ring_curr')
 
 # TODO Make this a Device so it can be used by bluesky.
 diag6_monitor = EpicsSignal('XF:23ID1-BI{Diag:6-Cam:1}Stats1:Total_RBV',
@@ -36,52 +36,54 @@ diag6_monitor = EpicsSignal('XF:23ID1-BI{Diag:6-Cam:1}Stats1:Total_RBV',
 
 diag6_pid_threshold = EpicsSignal('XF:23ID1-BI{Diag:6-Cam:1}Stats1:CentroidThreshold',name =  'diag6_pid_threshold')
 
-# TODO Make these a Device so it can be used in bluesky.
-mono_tempa = EpicsSignal('XF:23ID1-OP{TCtrl:1-Chan:A}T-I',
+#
+mono_tempa = EpicsSignalRO('XF:23ID1-OP{TCtrl:1-Chan:A}T-I',
                          name='mono_tempa')
 
-mono_tempb = EpicsSignal('XF:23ID1-OP{TCtrl:1-Chan:B}T-I',
+mono_tempb = EpicsSignalRO('XF:23ID1-OP{TCtrl:1-Chan:B}T-I',
                          name='mono_tempb')
 
-mono_tempc = EpicsSignal('XF:23ID1-OP{TCtrl:1-Chan:C}T-I', name='mono_tempc')
+mono_tempc = EpicsSignalRO('XF:23ID1-OP{TCtrl:1-Chan:C}T-I', name='mono_tempc')
 
-mono_tempd = EpicsSignal('XF:23ID1-OP{TCtrl:1-Chan:D}T-I', name='mono_tempd')
+mono_tempd = EpicsSignalRO('XF:23ID1-OP{TCtrl:1-Chan:D}T-I', name='mono_tempd')
 
 
-grt1_temp = EpicsSignal('XF:23ID1-OP{Mon-Grt:1}T-I',
+grt1_temp = EpicsSignalRO('XF:23ID1-OP{Mon-Grt:1}T-I',
                         name='grt1_temp')
 
-grt2_temp = EpicsSignal('XF:23ID1-OP{Mon-Grt:2}T-I',
+grt2_temp = EpicsSignalRO('XF:23ID1-OP{Mon-Grt:2}T-I',
                         name='grt2_temp')
 
+# FCCD sensor temperature
+fccd_temp = EpicsSignalRO('XF:23ID1-ES{TCtrl:2-Chan:A}T:C-I', name='fccd_temp')
 
 # Utility water temperature after mixing valve
-uw_temp = EpicsSignal('UT:SB1-Cu:1{}T:Spply_Ld-I', name='uw_temp')
+#uw_temp = EpicsSignal('UT:SB1-Cu:1{}T:Spply_Ld-I', name='uw_temp')
 
 
 # Calculated BPMs for combined EPUs
-angX = EpicsSignal('XF:23ID-ID{BPM}Val:AngleXS-I', name='angX')
+angX = EpicsSignalRO('XF:23ID-ID{BPM}Val:AngleXS-I', name='angX')
 
-angY = EpicsSignal('XF:23ID-ID{BPM}Val:AngleYS-I', name='angY')
+angY = EpicsSignalRO('XF:23ID-ID{BPM}Val:AngleYS-I', name='angY')
 
 # EPU1 positions for commissioning
-epu1_x_off = EpicsSignal('SR:C31-{AI}23:FPGA:x_mm-I', name='epu1_x_off')
+epu1_x_off = EpicsSignalRO('SR:C31-{AI}23:FPGA:x_mm-I', name='epu1_x_off')
 
-epu1_x_ang = EpicsSignal('SR:C31-{AI}23:FPGA:x_mrad-I', name='epu1_x_ang')
+epu1_x_ang = EpicsSignalRO('SR:C31-{AI}23:FPGA:x_mrad-I', name='epu1_x_ang')
 
-epu1_y_off = EpicsSignal('SR:C31-{AI}23:FPGA:y_mm-I', name='epu1_y_off')
+epu1_y_off = EpicsSignalRO('SR:C31-{AI}23:FPGA:y_mm-I', name='epu1_y_off')
 
-epu1_y_ang = EpicsSignal('SR:C31-{AI}23:FPGA:y_mrad-I', name='epu1_y_ang')
+epu1_y_ang = EpicsSignalRO('SR:C31-{AI}23:FPGA:y_mrad-I', name='epu1_y_ang')
 
 
 # EPU2 positions for commissioning
-epu2_x_off = EpicsSignal('SR:C31-{AI}23-2:FPGA:x_mm-I', name='epu2_x_off')
+epu2_x_off = EpicsSignalRO('SR:C31-{AI}23-2:FPGA:x_mm-I', name='epu2_x_off')
 
-epu2_x_ang = EpicsSignal('SR:C31-{AI}23-2:FPGA:x_mrad-I', name='epu2_x_ang')
+epu2_x_ang = EpicsSignalRO('SR:C31-{AI}23-2:FPGA:x_mrad-I', name='epu2_x_ang')
 
-epu2_y_off = EpicsSignal('SR:C31-{AI}23-2:FPGA:y_mm-I', name='epu2_y_off')
+epu2_y_off = EpicsSignalRO('SR:C31-{AI}23-2:FPGA:y_mm-I', name='epu2_y_off')
 
-epu2_y_ang = EpicsSignal('SR:C31-{AI}23-2:FPGA:y_mrad-I', name='epu2_y_ang')
+epu2_y_ang = EpicsSignalRO('SR:C31-{AI}23-2:FPGA:y_mrad-I', name='epu2_y_ang')
 
 
 # CSX-1 Scalar
@@ -209,6 +211,10 @@ class ProductionCamBase(AreaDetector):
     # once at instantiation time.
     def __init__(self, *arg, **kwargs):
         super().__init__(*arg, **kwargs)
+
+    def pause(self):              #Dan Allen added to make bsui stop progress bar on ^C
+        self.cam.acquire.put(0)
+        super().pause()
 
 
 class ProductionCamStandard(SingleTrigger, ProductionCamBase):
