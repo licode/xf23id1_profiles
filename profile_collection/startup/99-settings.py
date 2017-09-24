@@ -11,7 +11,8 @@ sd.baseline = [theta, delta, gamma,
                epu1, epu2,
                slt1, slt2, slt3,
                m1a, m3a,
-               mono_tempa, mono_tempb,  grt1_temp, grt2_temp]
+               mono_tempa, mono_tempb,  grt1_temp, grt2_temp,
+               nanop, tardis]
 
 dets = [sclr] #TODO decide if this is permanent
 

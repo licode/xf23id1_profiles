@@ -146,6 +146,7 @@ class PID(PVPositioner):
 
 # Sample position
 
+
 class SamplePosVirtualMotor(PVPositionerPC):
     readback = Cpt(EpicsSignalRO, 'Pos-RB')
     setpoint = Cpt(EpicsSignal, 'Pos-SP')
@@ -359,4 +360,62 @@ class LinearActIn(PVPositioner):
     #        return DeviceStatus(self, done=True, success=True)
     #    return super().set(val)
 
+class DelayGeneratorChan(EpicsSignal):
+    def __init__(self, prefix, **kwargs):
+        super().__init__(prefix + 'RB', write_pv=prefix + 'SP', **kwargs)
 
+
+class DelayGenerator(Device):
+    A = Cpt(DelayGeneratorChan, '-Chan:A}DO:Dly-')
+    B = Cpt(DelayGeneratorChan, '-Chan:B}DO:Dly-')
+    C = Cpt(DelayGeneratorChan, '-Chan:C}DO:Dly-')
+    D = Cpt(DelayGeneratorChan, '-Chan:D}DO:Dly-')
+    E = Cpt(DelayGeneratorChan, '-Chan:E}DO:Dly-')
+    F = Cpt(DelayGeneratorChan, '-Chan:F}DO:Dly-')
+    G = Cpt(DelayGeneratorChan, '-Chan:G}DO:Dly-')
+    H = Cpt(DelayGeneratorChan, '-Chan:H}DO:Dly-')
+
+
+class StruckSIS3820MCS(Device):
+    erase_start = Cpt(EpicsSignal, 'EraseStart')
+    erase_all = Cpt(EpicsSignal, 'EraseAll')
+    start_all = Cpt(EpicsSignal, 'StartAll')
+    stop_all = Cpt(EpicsSignal, 'StopAll')
+    acquiring = Cpt(EpicsSignalRO, 'Acquiring')
+
+    input_mode = Cpt(EpicsSignal, 'InputMode')
+    output_mode = Cpt(EpicsSignal, 'OutputMode')
+    output_polarity = Cpt(EpicsSignal, 'OutputPolarity')
+
+    channel_advance = Cpt(EpicsSignal, 'ChannelAdvance')
+    count_on_start = Cpt(EpicsSignal, 'CountOnStart')
+
+    max_channels = Cpt(EpicsSignalRO, 'MaxChannels')
+
+    read_all = Cpt(EpicsSignal, 'ReadAll')
+    n_use_all = Cpt(EpicsSignal, 'NUseAll')
+
+    current_channel = Cpt(EpicsSignalRO, 'CurrentChannel')
+
+    def __init__(self, prefix, **kwargs):
+        super().__init__(prefix, **kwargs)
+
+        self.wfrm = [EpicsSignalRO(prefix + 'Wfrm:{}'.format(n),
+                                   auto_monitor=False,
+                                   name=self.name + '_wfrm_{}'.format(n))
+                     for n in range(1,33)]
+        self.wfrm_proc = [EpicsSignal(prefix + 'Wfrm:{}.PROC'.format(n),
+                          put_complete=True,
+                          name=self.name + '_wfrm_{}_proc'.format(n))
+                          for n in range(1, 33)]
+
+    def _get_wfrm(self):
+
+        for proc in self.wfrm_proc:
+            proc.put(1)
+
+        all_wfrm = [w.get() for w in self.wfrm]
+
+        return all_wfrm
+
+    def kickoff(self):
