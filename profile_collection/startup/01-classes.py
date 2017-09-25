@@ -1,5 +1,6 @@
 from ophyd import EpicsMotor, PVPositioner, PVPositionerPC, EpicsSignal, EpicsSignalRO, Device
 from ophyd import Component as Cpt, FormattedComponent as FmtCpt
+from ophyd import DynamicDeviceComponent as DDC
 from ophyd import (EpicsMCA, EpicsDXP)
 from ophyd import DeviceStatus
 
@@ -362,21 +363,36 @@ class LinearActIn(PVPositioner):
 
 class DelayGeneratorChan(EpicsSignal):
     def __init__(self, prefix, **kwargs):
-        super().__init__(prefix + 'RB', write_pv=prefix + 'SP', **kwargs)
+        super().__init__(prefix + '-RB', write_pv=prefix + '-SP', **kwargs)
 
 
 class DelayGenerator(Device):
-    A = Cpt(DelayGeneratorChan, '-Chan:A}DO:Dly-')
-    B = Cpt(DelayGeneratorChan, '-Chan:B}DO:Dly-')
-    C = Cpt(DelayGeneratorChan, '-Chan:C}DO:Dly-')
-    D = Cpt(DelayGeneratorChan, '-Chan:D}DO:Dly-')
-    E = Cpt(DelayGeneratorChan, '-Chan:E}DO:Dly-')
-    F = Cpt(DelayGeneratorChan, '-Chan:F}DO:Dly-')
-    G = Cpt(DelayGeneratorChan, '-Chan:G}DO:Dly-')
-    H = Cpt(DelayGeneratorChan, '-Chan:H}DO:Dly-')
+    A = Cpt(DelayGeneratorChan, '-Chan:A}DO:Dly')
+    B = Cpt(DelayGeneratorChan, '-Chan:B}DO:Dly')
+    C = Cpt(DelayGeneratorChan, '-Chan:C}DO:Dly')
+    D = Cpt(DelayGeneratorChan, '-Chan:D}DO:Dly')
+    E = Cpt(DelayGeneratorChan, '-Chan:E}DO:Dly')
+    F = Cpt(DelayGeneratorChan, '-Chan:F}DO:Dly')
+    G = Cpt(DelayGeneratorChan, '-Chan:G}DO:Dly')
+    H = Cpt(DelayGeneratorChan, '-Chan:H}DO:Dly')
+
+
+def _mcs_fields(cls, attr_base, pv_base, nrange, field, **kwargs):
+    defn = OrderedDict()
+    for i in nrange:
+        attr = '{}_{}'.format(attr_base, i)
+        suffix = '{}{}{}'.format(pv_base, i, field)
+        defn[attr] = (cls, suffix, kwargs)
+
+    return defn
 
 
 class StruckSIS3820MCS(Device):
+    _default_configuration_attrs = ('input_mode', 'output_mode',
+                                    'output_polarity', 'channel_advance',
+                                    'count_on_start', 'max_channels')
+    _default_read_attrs = ('wfrm',)
+
     erase_start = Cpt(EpicsSignal, 'EraseStart')
     erase_all = Cpt(EpicsSignal, 'EraseAll')
     start_all = Cpt(EpicsSignal, 'StartAll')
@@ -389,6 +405,7 @@ class StruckSIS3820MCS(Device):
 
     channel_advance = Cpt(EpicsSignal, 'ChannelAdvance')
     count_on_start = Cpt(EpicsSignal, 'CountOnStart')
+    acquire_mode = Cpt(EpicsSignal, 'AcquireMode')
 
     max_channels = Cpt(EpicsSignalRO, 'MaxChannels')
 
@@ -397,25 +414,24 @@ class StruckSIS3820MCS(Device):
 
     current_channel = Cpt(EpicsSignalRO, 'CurrentChannel')
 
-    def __init__(self, prefix, **kwargs):
-        super().__init__(prefix, **kwargs)
+    wfrm = DDC(_mcs_fields(EpicsSignalRO,
+                           'wfrm', 'Wfrm:', range(1, 33), ''))
+    wfrm_proc = DDC(_mcs_fields(EpicsSignal,
+                                'wfrm_proc', 'Wfrm:', range(1, 33), '.PROC',
+                                put_complete=True))
 
-        self.wfrm = [EpicsSignalRO(prefix + 'Wfrm:{}'.format(n),
-                                   auto_monitor=False,
-                                   name=self.name + '_wfrm_{}'.format(n))
-                     for n in range(1,33)]
-        self.wfrm_proc = [EpicsSignal(prefix + 'Wfrm:{}.PROC'.format(n),
-                          put_complete=True,
-                          name=self.name + '_wfrm_{}_proc'.format(n))
-                          for n in range(1, 33)]
+    def trigger(self):
+        self.input_mode.put(3) # Set to using 0 = advance 3 = inhibit
+        self.acquire_mode.put(0) # Set MCS Mode
+        self.count_on_start.put(0) # Start collecting only when triggered
+        self.channel_advance.put(1) # External Triggers
+        self.erase_start.put(1) # Engage .....
+        super().trigger()
 
-    def _get_wfrm(self):
+    def read(self):
+        # Here we stop and poke the proc fields
+        self.stop_all.put(1)
+        for sn in self.wfrm_proc.signal_names:
+            getattr(self.wfrm_proc, sn).put(1)
+        super().read()
 
-        for proc in self.wfrm_proc:
-            proc.put(1)
-
-        all_wfrm = [w.get() for w in self.wfrm]
-
-        return all_wfrm
-
-    def kickoff(self):
