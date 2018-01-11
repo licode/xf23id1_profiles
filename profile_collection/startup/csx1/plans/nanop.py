@@ -1,13 +1,23 @@
+"""
+additional generic scans for nanopositioners.  ZP suffix in plan
+name is indicative of 4 motor parameters until the epics pseudo
+motor is made, then the generic non-ZP scan should be used.
+"""
+
+
 import numpy as np
 from cycler import cycler
 import bluesky.plans as bp
 
-### additional generic scans for nanopositioners.
-### ZP suffix in plan name is indicative of 4 motor parameters until the epics pseudo motor is made, then the generic non-ZP scan should be used.
 
-def spiral_continuous(detectors, x_motor, y_motor, x_start, y_start, npts, probe_size, overlap=0.8 , *, tilt=0.0, per_step=None, md=None):
-    '''Continuously increasing radius spiral scan, centered around (x_start, y_start)
-    which is generic regarding motors and detectors.
+def spiral_continuous(detectors,
+                      x_motor, y_motor, x_start, y_start, npts,
+                      probe_size, overlap=0.8,  *,
+                      tilt=0.0, per_step=None, md=None):
+    '''Continuously increasing radius spiral scan.
+
+    centered around (x_start, y_start) which is generic regarding
+    motors and detectors.
 
     Parameters
     ----------
@@ -25,10 +35,12 @@ def spiral_continuous(detectors, x_motor, y_motor, x_start, y_start, npts, probe
         radius of probe in units of motors
     overlap : float
         fraction of probe overlap
+
     ----------------------------------------------------------------
     Not implemented yet:
     tilt : float, optional (not yet enabled)
         Tilt angle in radians, default = 0.0
+
     per_step : callable, optional
         hook for cutomizing action of inner loop (messages per step)
         See docstring of bluesky.plans.one_nd_step (the default) for
@@ -38,12 +50,13 @@ def spiral_continuous(detectors, x_motor, y_motor, x_start, y_start, npts, probe
         metadata
 
     '''
+    # #TODO clean up pattern args and _md.  Do not remove motors from _md.
+    pattern_args = dict(x_motor=x_motor, y_motor=y_motor,
+                        x_start=x_start, y_start=y_start, npts=npts,
+                        probe_size=probe_size, overlap=overlap,
+                        tilt=tilt)
 
-
-    ##TODO clean up pattern args and _md.  Do not remove motors from _md.
-    pattern_args = dict(x_motor=x_motor, y_motor=y_motor, x_start=x_start, y_start=y_start,
-                        npts = npts, probe_size=probe_size, overlap=overlap, tilt=tilt)
-    #cyc = plan_patterns.spiral(**pattern_args)# - leftover from spiral.
+    # cyc = plan_patterns.spiral(**pattern_args)# - leftover from spiral.
 
     bxs = []
     bzs = []
@@ -51,11 +64,12 @@ def spiral_continuous(detectors, x_motor, y_motor, x_start, y_start, npts, probe
     bx_init = x_start
     bz_init = y_start
 
-    for i in range(0,npts):
+    for i in range(0, npts):
         R = np.sqrt(i/np.pi)
-        T = 2*i/(R+0.0000001) #this is to get the first point to be the center
-        bx = (overlap*probe_size*R * np.cos(T))  + bx_init
-        bz = (overlap*probe_size*R * np.sin(T))  + bz_init
+        # this is to get the first point to be the center
+        T = 2*i/(R+0.0000001)
+        bx = (overlap*probe_size*R * np.cos(T)) + bx_init
+        bz = (overlap*probe_size*R * np.sin(T)) + bz_init
         bxs.append(bx)
         bzs.append(bz)
 
@@ -64,14 +78,13 @@ def spiral_continuous(detectors, x_motor, y_motor, x_start, y_start, npts, probe
     y_range = max(motor_vals[1]) - min(motor_vals[1])
     motor_pos = cycler(x_motor, bxs) + cycler(y_motor, bzs)
 
-
     # Before including pattern_args in metadata, replace objects with reprs.
     pattern_args['x_motor'] = repr(x_motor)
     pattern_args['y_motor'] = repr(y_motor)
     _md = {'plan_args': {'detectors': list(map(repr, detectors)),
                          'x_motor': repr(x_motor), 'y_motor': repr(y_motor),
                          'x_start': x_start, 'y_start': y_start,
-                         'overlap': overlap, #'nth': nth,
+                         'overlap': overlap,  # 'nth': nth,
                          'tilt': tilt,
                          'per_step': repr(per_step)},
            'extents': tuple([[x_start - x_range, x_start + x_range],
@@ -79,9 +92,10 @@ def spiral_continuous(detectors, x_motor, y_motor, x_start, y_start, npts, probe
            'plan_name': 'spiral_continuous',
            'plan_pattern': 'spiral_continuous',
            'plan_pattern_args': pattern_args,
-           #'plan_pattern_module': plan_patterns.__name__,  # - leftover from spiral.
-           'hints': {},
-          }
+           # - leftover from spiral.
+           # 'plan_pattern_module': plan_patterns.__name__,
+           'hints': {}}
+
     try:
         dimensions = [(x_motor.hints['fields'], 'primary'),
                       (y_motor.hints['fields'], 'primary')]
@@ -95,7 +109,6 @@ def spiral_continuous(detectors, x_motor, y_motor, x_start, y_start, npts, probe
 
     reset_plan = bp.mv(x_motor, x_start, y_motor, y_start)
 
-
     def plan_steps():
         yield from cont_sp_plan
         print('Moving back to first point position.')
@@ -105,10 +118,7 @@ def spiral_continuous(detectors, x_motor, y_motor, x_start, y_start, npts, probe
         return (yield from plan_steps())
 
     except Exception:
-       # Catch the exception long enough to clean up.
+        # Catch the exception long enough to clean up.
         print('Moving back to first point position.')
         yield from reset_plan
         raise
-
-
-
