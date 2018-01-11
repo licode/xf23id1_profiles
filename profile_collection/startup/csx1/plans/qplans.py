@@ -1,10 +1,9 @@
 import numpy as np
 from cycler import cycler
-from ..devices.optics import (PGM, PGMEnergy)
 from ..startup.optics import pgm
-from ..startup.endstation import (delta,theta,gamma)
+from ..startup.endstation import (delta, theta, gamma)
 from ..startup.tardis import tardis
-import bluesky.plans as bp
+import bluesky.plan_stubs as bps
 from bluesky.plans import scan_nd
 
 
@@ -89,7 +88,7 @@ def EfixQapprox(detectors, E_start, E_end, npts, E_shift=0, *,
     # this works without subs,
     Escan_plan = scan_nd(detectors, motor_pos, per_step=per_step, md=_md)
 
-    reset_plan = bp.mv(x_motor, E_init, delta, delta_init, theta, theta_init)
+    reset_plan = bps.mv(x_motor, E_init, delta, delta_init, theta, theta_init)
 
     # Check for suitable syntax..
     # yield from print('Starting an Escan fix Q at ({:.4f}, {:.4f}, {:.4f})'.format(h_init,k_init,l_init))
@@ -198,8 +197,8 @@ def EfixQ(detectors, E_start, E_end, steps, E_shift=0, *,
     # this works without subs,
     Escan_plan = scan_nd(detectors, motor_pos, per_step=per_step, md=_md)
 
-    reset_plan = bp.mv(x_motor, E_init, delta, delta_init, theta,
-                       theta_init, gamma, gamma_init)
+    reset_plan = bps.mv(x_motor, E_init, delta, delta_init, theta,
+                        theta_init, gamma, gamma_init)
 
     # yield from print('Starting an Escan fix Q at ({:.4f}, {:.4f}, {:.4f})'.format(h_init,k_init,l_init))
 
@@ -210,7 +209,7 @@ def EfixQ(detectors, E_start, E_end, steps, E_shift=0, *,
         yield from Escan_plan
         print('\nMoving back to motor positions immediately before scan\n')
         yield from reset_plan
-        yield from bp.sleep(1)
+        yield from bps.sleep(1)
         tardis.calc.energy = (pgm.energy.readback.value + E_shift)/10000
         print('Returned to Q at ({:.4f}, {:.4f}, {:.4f})'.format(
             tardis.h.position, tardis.k.position, tardis.l.position))
@@ -221,7 +220,7 @@ def EfixQ(detectors, E_start, E_end, steps, E_shift=0, *,
     except Exception:
         print('\nMoving back to motor positions immediately before scan\n')
         yield from reset_plan
-        yield from bp.sleep(1)
+        yield from bps.sleep(1)
         tardis.calc.energy = (pgm.energy.readback.value + E_shift)/10000
         print('Returned to Q at ({:.4f}, {:.4f}, {:.4f})'.format(
             tardis.h.position, tardis.k.position, tardis.l.position))
