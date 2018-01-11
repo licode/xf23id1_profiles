@@ -1,10 +1,3 @@
-"""
-additional generic scans for nanopositioners.  ZP suffix in plan
-name is indicative of 4 motor parameters until the epics pseudo
-motor is made, then the generic non-ZP scan should be used.
-"""
-
-
 import numpy as np
 from cycler import cycler
 import bluesky.plans as bp
