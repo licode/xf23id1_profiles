@@ -6,13 +6,13 @@ from ..devices.optics import (SamplePosVirtualMotor, Cryoangle,
                              Nanopositioner)
 
 from ..devices.lakeshore import Lakeshore336
-
+from .tardis import tardis
 
 # Diffo angles
 
-delta = EpicsMotor('XF:23ID1-ES{Dif-Ax:Del}Mtr', name='delta')
-gamma = EpicsMotor('XF:23ID1-ES{Dif-Ax:Gam}Mtr', name='gamma')
-theta = EpicsMotor('XF:23ID1-ES{Dif-Ax:Th}Mtr', name='theta')
+delta = tardis.delta
+gamma = tardis.gamma
+theta = tardis.theta
 
 
 # Sample positions
@@ -37,5 +37,3 @@ eta = EpicsMotor('XF:23ID1-ES{Diag:1-Ax:Eta}Mtr', name='eta')
 # Lakeshore 336 Temp Controller
 
 stemp = Lakeshore336('XF:23ID1-ES{TCtrl:1', name='stemp')
-
-
