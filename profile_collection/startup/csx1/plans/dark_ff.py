@@ -1,6 +1,7 @@
 # dark and flatfield plans
 
 import bluesky.plans as bp
+import bluesky.plan_stubs as bps
 from ..startup.optics import inout
 from ..startup.detectors import fccd
 
@@ -44,24 +45,24 @@ The pre-count shutter & gain states preserved.
         print('\tCurrent number of images = {}.\n'.format(
             fccd.cam.num_images.value))
 
-        yield from bp.sleep(.3)
+        yield from bps.sleep(.3)
 
         if numim is not None:
             print('\tSetting to {} images.\n'.format(numim))
-            yield from abs_set(fccd.cam.num_images,numim,wait=True)
+            yield from bps.abs_set(fccd.cam.num_images, numim, wait=True)
 
         dark_shutter_state = inout.status.value
         dark_sh_dict = {'Inserted': 'In', 'Not Inserted': 'Out'}
         gain_state = fccd.cam.fcric_gain.value
         gain_bit_dict = {0: 'auto', 1: 'x2', 2: 'x1'}
 
-        yield from bp.mv(inout, 'In')
+        yield from bps.mv(inout, 'In')
         # This has to be 2 until we can selectively remove dark images
         # get_fastccd_images()
-        yield from bp.sleep(fccd.cam.acquire_period.value*2.01)
+        yield from bps.sleep(fccd.cam.acquire_period.value*2.01)
         # SET TO 1 TO ARM FOR NEXT EVENT so that the FastCCD1 is
         # already bkg subt
-        yield from bp.mv(fccd.fccd1.capture_bgnd, 1)
+        yield from bps.mv(fccd.fccd1.capture_bgnd, 1)
 
         # take darks
         yield from _ct_dark(detectors, gain_std, gain_bit_dict)
@@ -83,31 +84,32 @@ The pre-count shutter & gain states preserved.
 
 
 def _ct_dark(detectors, gain_bit_input, gain_bit_dict):
-    yield from bp.mv(fccd.cam.fcric_gain, gain_bit_input)
+    yield from bps.mv(fccd.cam.fcric_gain, gain_bit_input)
     # if _gain_bit_input != 0:
-    #    yield from bp.sleep(fccd.cam.acquire_period.value*2.01) # This has to be 2 until we can selectively remove dark images get_fastccd_images()
+    #     yield from bps.sleep(fccd.cam.acquire_period.value*2.01) # This has to be 2 until we can selectively remove dark images get_fastccd_images()
     print('\n\nGain bit set to {} for a gain value of {}\n'.format(
         gain_bit_input, gain_bit_dict.get(gain_bit_input)))
 
     # TODO use md csxtools dark correction
-    yield from count(detectors,
-                     md={'fccd': {'image': 'dark',
-                                  'gain': gain_bit_dict.get(gain_bit_input)}})
+    yield from bp.count(detectors,
+                        md={'fccd': {
+                            'image': 'dark',
+                            'gain': gain_bit_dict.get(gain_bit_input)}})
 
     # Commented this out because we should be using the md
     # olog('ScanNo {} Darks at for {}Hz or {}s with most sensitive gain
 
-    #({},Auto)'.format(db[-1].start['scan_id'],1/fccd.cam.acquire_time.value,fccd.cam.acquire_time.value,fccd.cam.fcric_gain.value))
+    # ({},Auto)'.format(db[-1].start['scan_id'],1/fccd.cam.acquire_time.value,fccd.cam.acquire_time.value,fccd.cam.fcric_gain.value))
 
 
 def _ct_dark_cleanup(oldnumim, gain_bit_dict, gain_state,
                      dark_sh_dict, dark_shutter_state):
     print('\nReturning to intial conditions (pre-count).')
-    yield from abs_set(fccd.cam.num_images,oldnumim,wait=True)
+    yield from bps.abs_set(fccd.cam.num_images, oldnumim, wait=True)
 
-    yield from bp.mv(fccd.cam.fcric_gain, gain_state)
-    yield from bp.mv(inout,dark_sh_dict.get(dark_shutter_state))
-    yield from bp.sleep(fccd.cam.acquire_period.value)
+    yield from bps.mv(fccd.cam.fcric_gain, gain_state)
+    yield from bps.mv(inout, dark_sh_dict.get(dark_shutter_state))
+    yield from bps.sleep(fccd.cam.acquire_period.value)
 
     print('\tTotal images per trigger are NOW:\t {}'.format(
         fccd.cam.num_images.setpoint))
@@ -143,11 +145,11 @@ def ct_dark_all(numim=None, detectors=[fccd]):
         print('\tCurrent number of images = {}.\n'.format(
             fccd.cam.num_images.value))
 
-        yield from bp.sleep(.3)
+        yield from bps.sleep(.3)
 
         if numim is not None:
             print('\tSetting to {} images.\n'.format(numim))
-            yield from abs_set(fccd.cam.num_images, numim, wait=True)
+            yield from bps.abs_set(fccd.cam.num_images, numim, wait=True)
 
         dark_shutter_state = inout.status.value
         dark_sh_dict = {'Inserted': 'In', 'Not Inserted': 'Out'}
@@ -155,13 +157,13 @@ def ct_dark_all(numim=None, detectors=[fccd]):
 
         gain_bit_dict = {0: 'auto', 1: 'x2', 2: 'x1'}
 
-        yield from bp.mv(inout, 'In')
+        yield from bps.mv(inout, 'In')
         # This has to be 2 until we can selectively remove dark images
         # get_fastccd_images()
-        yield from bp.sleep(fccd.cam.acquire_period.value*2.01)
+        yield from bps.sleep(fccd.cam.acquire_period.value*2.01)
         # SET TO 1 TO ARM FOR NEXT EVENT so that the FastCCD1 is
         # already bkg subt
-        yield from bp.mv(fccd.fccd1.capture_bgnd,1)
+        yield from bps.mv(fccd.fccd1.capture_bgnd, 1)
 
         # take darks
         for i in range(0, 3):
