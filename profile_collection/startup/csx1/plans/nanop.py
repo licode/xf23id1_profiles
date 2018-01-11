@@ -8,6 +8,7 @@ motor is made, then the generic non-ZP scan should be used.
 import numpy as np
 from cycler import cycler
 import bluesky.plans as bp
+import bluesky.plan_stubs as bps
 
 
 def spiral_continuous(detectors,
@@ -107,7 +108,7 @@ def spiral_continuous(detectors,
 
     cont_sp_plan = bp.scan_nd(detectors, motor_pos, per_step=per_step, md=_md)
 
-    reset_plan = bp.mv(x_motor, x_start, y_motor, y_start)
+    reset_plan = bps.mv(x_motor, x_start, y_motor, y_start)
 
     def plan_steps():
         yield from cont_sp_plan
