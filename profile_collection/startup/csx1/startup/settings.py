@@ -87,7 +87,7 @@ BlueskyMagics.positioners = [
     tardis.k,
     tardis.l,
     tardis.theta,
-    tardis.omega,
+    tardis.mu,
     tardis.chi,
     tardis.phi,
     tardis.delta,

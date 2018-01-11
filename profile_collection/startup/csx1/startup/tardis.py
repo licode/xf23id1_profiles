@@ -5,6 +5,8 @@ from ophyd.pseudopos import (pseudo_position_argument, real_position_argument)
 
 # Add MuR and MuT to bluesky list of motors and detectors.
 muR = EpicsMotor('XF:23ID1-ES{Dif-Ax:MuR}Mtr', name='muR')
+# use the line below if very paranoid
+# muR = EpicsSignal('XF:23ID1-ES{Dif-Ax:MuR}Mtr.RBV', name='muR')
 muT = EpicsMotor('XF:23ID1-ES{Dif-Ax:MuT}Mtr', name='muT')
 
 
@@ -21,8 +23,8 @@ class Tardis(E6C):  #this works for mu=0
     l = Cpt(PseudoSingle, '')
 
     theta = Cpt(EpicsMotor, 'XF:23ID1-ES{Dif-Ax:Th}Mtr')
-    omega = Cpt(NullMotor)
-    #omega = Cpt(EpicsSignal,'XF:23ID1-ES{Dif-Ax:MuR}Mtr.RBV')
+    mu = Cpt(NullMotor)
+
     chi =   Cpt(NullMotor)
     phi =   Cpt(NullMotor)
     delta = Cpt(EpicsMotor, 'XF:23ID1-ES{Dif-Ax:Del}Mtr')
@@ -34,9 +36,15 @@ class Tardis(E6C):  #this works for mu=0
 
         # prime the 3 null-motors with initial values
         # otherwise, position == None --> describe, etc gets borked
-        self.omega.move(muR.user_readback.value)
         self.chi.move(0.0)
         self.phi.move(0.0)
+
+        # we have to use a motor for omega to keep hkl happy,
+        # but want to keep omega as read-only and to follow muR
+        def muR_updater(value, **kwargs):
+            self.mu.move(value)
+
+        muR.subscribe(muR_updater)
 
     @pseudo_position_argument
     def set(self, position):
@@ -49,7 +57,7 @@ class Tardis(E6C):  #this works for mu=0
 tardis = Tardis('', name='tardis')
 
 # re-map Tardis' axis names onto what an E6C expects
-name_map = {'mu': 'theta', 'omega': 'omega', 'chi': 'chi', 'phi': 'phi', 'gamma': 'delta', 'delta': 'gamma'}
+name_map = {'mu': 'theta', 'omega': 'mu', 'chi': 'chi', 'phi': 'phi', 'gamma': 'delta', 'delta': 'gamma'}
 
 
 tardis.calc.physical_axis_names = name_map
@@ -86,9 +94,9 @@ tardis.calc['chi'].value = 0
 tardis.calc['chi'].fit = False
 
 # we don't have it!! Fix to 0
-tardis.calc['omega'].limits = (0, 0)
-tardis.calc['omega'].value = 0#tardis.omega.position.real
-tardis.calc['omega'].fit = False
+tardis.calc['mu'].limits = (0, 0)
+tardis.calc['mu'].value = 0#tardis.omega.position.real
+tardis.calc['mu'].fit = False
 
 # Attention naming convention inverted at the detector stages!
 # delta
@@ -132,6 +140,3 @@ tardis.calc['gamma'].fit = True
 # tardis.calc.forward((1,0,1)) -> calculates physical motor positions
 # given an HKL
 # tardis.move(0,0,0) -> physical motion corresponding to a given HKL
-
-
-
