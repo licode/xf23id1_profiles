@@ -1,8 +1,10 @@
-from collections import deque
-import bluesky.plans as bp
+from ..startup.detectors import fccd
+from collections import Iterable
+import itertools
+import time
+import bluesky.preprocessors as bpp
+from bluesky import Msg
 
-# The below will allow you to quit a scan and still access the data.
-# Because count() and not ct() was used, the monitor stream will not be appended automatically
 
 def xpcs_ct(num=1, delay=None, *, md=None):
     """
@@ -45,11 +47,11 @@ def xpcs_ct(num=1, delay=None, *, md=None):
                                  "entries" % (num, num_delays))
         delay = iter(delay)
 
-    @stage_decorator(detectors)
-    @run_decorator(md=_md)
+    @bpp.stage_decorator(detectors)
+    @bpp.run_decorator(md=_md)
     def finite_plan():
         for i in range(num):
-            now = time.time() # Intercept the flow in its earliest moment.
+            now = time.time()  # Intercept the flow in its earliest moment.
             yield Msg('checkpoint')
             yield from fccd_aware_trigger_and_read(detectors)
             try:
@@ -66,8 +68,8 @@ def xpcs_ct(num=1, delay=None, *, md=None):
                 if d > 0:  # Sleep if and only if time is left to do it.
                     yield Msg('sleep', None, d)
 
-    @stage_decorator(detectors)
-    @run_decorator(md=_md)
+    @bpp.stage_decorator(detectors)
+    @bpp.run_decorator(md=_md)
     def infinite_plan():
         while True:
             yield Msg('checkpoint')
