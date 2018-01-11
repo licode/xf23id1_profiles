@@ -6,7 +6,7 @@ from ..startup.optics import inout
 from ..startup.detectors import fccd
 
 
-def ct_dark(numim=None, detectors=[fccd], gain_std=0):
+def ct_dark(numim=None, detectors=None, gain_std=0):
     """Collect dark images for fccd and add metadata tag for dark and gain.
 
 The pre-count shutter & gain states preserved.
@@ -28,9 +28,12 @@ The pre-count shutter & gain states preserved.
         Default = 0   (which is 'Auto' or x8, the most sensitive gain)
 
     Returns
-    -----------
+    -------
 
     """
+    if detectors is None:
+        detectors = [fccd]
+
     try:
         # TODO figureout kwargs and self to mkae up to line 44 a
         # single definition
@@ -117,7 +120,7 @@ def _ct_dark_cleanup(oldnumim, gain_bit_dict, gain_state,
         gain_bit_dict.get(fccd.cam.fcric_gain.value)))
 
 
-def ct_dark_all(numim=None, detectors=[fccd]):
+def ct_dark_all(numim=None, detectors=None):
     """Collect dark images for fccd and add metadata tag for dark and gain.
 
     The pre-count shutter & gain states preserved.
@@ -135,6 +138,8 @@ def ct_dark_all(numim=None, detectors=[fccd]):
     -----------
 
     """
+    if detectors is None:
+        detectors = [fccd]
     try:
         oldnumim = fccd.cam.num_images.value
 
