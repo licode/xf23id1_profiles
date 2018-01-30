@@ -26,8 +26,8 @@ cryoangle = Cryoangle('', name='cryoangle')
 
 
 # Nano-positioners
-
-nanop = Nanopositioner('XF:23ID1-ES{Dif:Lens', name='nanop')
+# TODO This is the original setup.  Delete and replace with NEW
+#nanop = Nanopositioner('XF:23ID1-ES{Dif:Lens', name='nanop')
 
 # Diagnostic Axis
 

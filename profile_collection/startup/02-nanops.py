@@ -50,4 +50,5 @@ for nn in nanop.component_names:
 
 BlueskyMagics.positioners += [getattr(nanop, nn) for nn in nanop.component_names]
 
-sd.baseline += [getattr(nanop, nn) for nn in nanop.component_names]
+#sd.baseline += [getattr(nanop, nn) for nn in nanop.component_names]
+sd.baseline += [nanop]
