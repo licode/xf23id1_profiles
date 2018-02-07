@@ -108,6 +108,23 @@ class ProductionCamBase(DetectorBase):
         self.cam.acquire.put(0)
         super().pause()
 
+    def stage(self):
+        from ophyd.utils import set_and_wait
+        import time as ttime
+
+        # pop both string and object versions to be paranoid
+        self.stage_sigs.pop('cam.acquire', None)
+        self.stage_sigs.pop(self.cam.acquire, None)
+
+        # we need to take the detector out of acquire mode
+        self._original_vals[self.cam.acquire] = self.cam.acquire.get()
+        set_and_wait(self.cam.acquire, 0)
+        # but then watch for when detector state
+        while self.cam.detector_state.get(as_string=True) != 'Idle':
+            ttime.sleep(.01)
+
+        return super().stage()
+
 
 class ProductionCamStandard(SingleTrigger, ProductionCamBase):
 
