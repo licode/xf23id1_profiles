@@ -1,7 +1,8 @@
 from nslsii.detectors.xspress3 import (XspressTrigger,
-                                         Xspress3Detector,
-                                         Xspress3FileStore,
-                                         Xspress3Channel)
+                                       Xspress3Detector,
+                                       Xspress3FileStore,
+                                       Xspress3Channel,
+                                       Xspress3ROI)
 from ophyd.areadetector.plugins import PluginBase
 
 class CSXXspress3Detector(XspressTrigger, Xspress3Detector):
@@ -9,14 +10,17 @@ class CSXXspress3Detector(XspressTrigger, Xspress3Detector):
     channel1 = Cpt(Xspress3Channel,
                    'C1_', channel_num=1,
                    read_attrs=['rois'])
+    # arrsum = Cpt(Xspress3Detector, 'ARRSUM1:ArrayData', read_attrs=[], configuration_attrs=[])
+    # arr1 =Cpt(Xspress3Detector, 'ARR1:ArrayData', read_attrs=[], configuration_attrs=[])
 
     hdf5 = Cpt(Xspress3FileStore, 'HDF5:',
                write_path_template='/GPFS/xf23id/xf23id1/xspress3_data/%Y/%m/%d/',
                root='/GPFS/xf23id/xf23id1/',
-               fs=db.event_sources[0].fs)
+               reg=db.reg)
 
-    def __init__(self, prefix, *, configuration_attrs=None, read_attrs=None,
+    def __init__(self, prefix, *, num_images=1, configuration_attrs=None, read_attrs=None,
                  **kwargs):
+        self.num_images = num_images
         if configuration_attrs is None:
             configuration_attrs = ['external_trig', 'total_points',
                                    'spectra_per_point', 'settings',
@@ -26,13 +30,17 @@ class CSXXspress3Detector(XspressTrigger, Xspress3Detector):
         super().__init__(prefix, configuration_attrs=configuration_attrs,
                          read_attrs=read_attrs, **kwargs)
 
+    def stage(self):
+        super().stage()
+        self.settings.num_images.put(self.num_images)
+
+xsp3 = CSXXspress3Detector('XF:23ID1-ES{XP3}:', name='xsp3', roi_sums=True)
 
 
-xsp3 = CSXXspress3Detector('XF:23ID1-ES{XP3}:', name='xsp3')
 for j, r in enumerate(xsp3.channel1.all_rois):
     r.value.name = 'xsp3_roi_{:02d}'.format(j+1)
     r.value_sum.name = 'xsp3_accumulated_roi_{:02d}'.format(j+1)
-    r.read_attrs = ['value']
+    r.read_attrs = ['value', 'value_sum']
 
 def setup_rois(channel, roi_width):
     for j, roi in enumerate(channel.all_rois):
@@ -54,49 +62,5 @@ def get_range(elm):
                'Ni': [84, 86]}
     return elm_map[elm]
 
-def monitor_mca_for_fccd(plan):
-    monitored = False
-    monitor_targets = [r.value for r in xsp3.channel1.all_rois]
-    monitor_msgs = [Msg('monitor', s) for s in monitor_targets]
-    unmonitor_msgs = [Msg('unmonitor', s) for s in monitor_targets]
-
-    def watch_for_fccd_trigger(msg):
-        if msg.command == 'trigger' and msg.obj is fccd:
-            def new_gen():
-                nonlocal monitored
-                if not monitored:
-                    monitored = True
-                    # cheating
-                    config = fccd.read_configuration()
-                    total_time = config['fccd_cam_acquire_time']['value'] * config['fccd_plugin_num_images']['value']
-                    exp_time = 1
-                    xsp3.stage_sigs['settings.acquire_time'] = exp_time
-                    xsp3.stage_sigs['settings.num_exposures'] =  int(total_time / exp_time) + 2
-                    yield from bp.stage(xsp3)
-                    yield from ensure_generator(monitor_msgs)
-
-                yield from bp.trigger(xsp3)
-                return (yield msg)
-
-            return new_gen(), None
-        elif msg.command == 'close_run':
-            def stop_gen():
-                yield from maybe_shutdown()
-                return (yield msg)
-            return stop_gen(), None
 
 
-        else:
-            return None, None
-
-    def maybe_shutdown():
-        nonlocal monitored
-        if not monitored:
-            return
-        yield from ensure_generator(unmonitor_msgs)
-        yield from bp.unstage(xsp3)
-        monitored = False
-
-    return (yield from finalize_wrapper(
-        plan_mutator(plan, watch_for_fccd_trigger),
-        maybe_shutdown()))

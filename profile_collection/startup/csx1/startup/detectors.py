@@ -33,7 +33,7 @@ diag6_pid_threshold = EpicsSignal('XF:23ID1-BI{Diag:6-Cam:1}Stats1:CentroidThres
 
 sclr = PrototypeEpicsScaler('XF:23ID1-ES{Sclr:1}', name='sclr')
 
-for sig in sclr.channels.signal_names:
+for sig in sclr.channels.component_names:
     getattr(sclr.channels, sig).name = 'sclr_' + sig.replace('an', '')
 
 mcs = StruckSIS3820MCS('XF:23ID1-ES{Sclr:1}', name='mcs')
@@ -54,6 +54,16 @@ _setup_stats(cube_beam)
 
 dif_beam = StandardCam('XF:23ID1-ES{Dif-Cam:Beam}', name='dif_beam')
 _setup_stats(dif_beam)
+
+# Setup on 2018/03/16 for correlating fCCD and sample position
+dif_cam1 = StandardCam('XF:23ID1-ES{Dif-Cam:1}', name='dif_cam1')
+_setup_stats(dif_cam1)
+
+#dif_cam2 = StandardCam('XF:23ID1-ES{Dif-Cam:2}', name='dif_cam2')
+#_setup_stats(dif_cam2)
+#
+#dif_cam3 = StandardCam('XF:23ID1-ES{Dif-Cam:3}', name='dif_cam3')
+#_setup_stats(dif_cam3)
 
 #
 # FastCCD
