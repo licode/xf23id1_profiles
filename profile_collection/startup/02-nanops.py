@@ -12,6 +12,7 @@ class NanoMotor(EpicsMotor):
         ('dly', 'rdbd', 'rmod', 'cnen', 'pcof', 'icof'))
     user_setpoint = Cpt(EpicsSignal, 'PA_sm')
     dly = Cpt(EpicsSignal, '.DLY')
+    rtry = Cpt(EpicsSignal, '.RTRY')
     rdbd = Cpt(EpicsSignal, '.RDBD')
     rmod = Cpt(EpicsSignal, '.RMOD')
     cnen = Cpt(EpicsSignal, '.CNEN')
@@ -23,7 +24,7 @@ class NanoMotorOpenLoop(EpicsMotor):
     #    EpicsMotor._default_configuration_attrs +
     #    ('dly', 'rdbd', 'rmod', 'cnen', 'pcof', 'icof'))
     _default_read_attrs = ('user_setpoint', 'user_readback','done_signal')
-    _default_configuration_attrs = ('velocity',)
+    _default_configuration_attrs = ('velocity','t_settle')
     user_setpoint = Cpt(EpicsSignal, 'Abs')
     velocity = Cpt(EpicsSignal,'FQUnits')
     done_signal=Cpt(EpicsSignal,'DMOV')
@@ -36,11 +37,11 @@ class NanoMotorOpenLoop(EpicsMotor):
     pcof = Cpt(EpicsSignal, '.PCOF')
     icof = Cpt(EpicsSignal, '.ICOF')
     t_settle = Cpt(EpicsSignal, 'SETL')
-    '''
+
     @property
     def connected(self):
          return True
-    '''
+
     def remove_bad_signals(self):
         good_signals = list(self._default_read_attrs) + list(self._default_configuration_attrs)
         all_keys = list(self._signals.keys())
@@ -98,16 +99,20 @@ nanop.bz.remove_bad_signals()  # solve the issue with disconnection errors
 temp_settle_time = 0.2
 
 _base_nano_setting = {'velocity': 0.10,
-                      #'acceleration': 0.20,
-                      #'dly': temp_settle_time,
-                      #'rdbd': 1e-5,
-                      #'rmod': 1,
-                      #'cnen': 1,
-                      #'pcof': 0.1,
-                      #'icof': 0.010
+                      'acceleration': 0.20,
+                      'dly': temp_settle_time,
+                      'rtry': 3,
+                      'rdbd': 1e-5,
+                      'rmod': 1,
+                      'cnen': 1,
+                      'pcof': 0.1,
+                      'icof': 0.010
                       }
 
 for nn in nanop.component_names:
+    if nn == "bz":
+        getattr(nanop, nn).configure({'velocity':0.10,'t_settle':temp_settle_time})
+        continue
     getattr(nanop, nn).configure(_base_nano_setting)
 
 BlueskyMagics.positioners += [getattr(nanop, nn) for nn in nanop.component_names]
