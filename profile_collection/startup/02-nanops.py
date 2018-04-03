@@ -9,7 +9,7 @@ from epics import caget,caput
 class NanoMotor(EpicsMotor):
     _default_configuration_attrs = (
         EpicsMotor._default_configuration_attrs +
-        ('dly', 'rdbd', 'rmod', 'cnen', 'pcof', 'icof'))
+        ('dly', 'rtry', 'rdbd', 'rmod', 'cnen', 'pcof', 'icof'))
     user_setpoint = Cpt(EpicsSignal, 'PA_sm')
     dly = Cpt(EpicsSignal, '.DLY')
     rtry = Cpt(EpicsSignal, '.RTRY')
@@ -31,6 +31,7 @@ class NanoMotorOpenLoop(EpicsMotor):
     #acceleration=Cpt(EpicsSignal,'DMOV')
     user_readback = Cpt(EpicsSignal, 'AbsLast')
     dly = Cpt(EpicsSignal, '.DLY')
+    # no retry is needed here due to the open loop mode..
     rdbd = Cpt(EpicsSignal, '.RDBD')
     rmod = Cpt(EpicsSignal, '.RMOD')
     cnen = Cpt(EpicsSignal, '.CNEN')
