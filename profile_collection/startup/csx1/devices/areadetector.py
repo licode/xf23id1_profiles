@@ -16,6 +16,8 @@ from bluesky.examples import NullStatus
 from .devices import DelayGenerator
 from .scaler import StruckSIS3820MCS
 
+import numpy as np
+
 class StandardCam(SingleTrigger, AreaDetector):
     stats1 = Cpt(StatsPlugin, 'Stats1:')
     stats2 = Cpt(StatsPlugin, 'Stats2:')
@@ -139,11 +141,27 @@ class ProductionCamStandard(SingleTrigger, ProductionCamBase):
         return super().stop()
 
     def pause(self):
-        self.hdf5.capture.put(0)
+        set_val = 0
+        self.hdf5.capture.put(set_val)
+        #val = self.hdf5.capture.get()
+        ## Julien fix to ensure these are set correctly
+        #print("pausing FCCD")
+        #while (np.abs(val-set_val) > 1e-6):
+            #self.hdf5.capture.put(set_val)
+            #val = self.hdf5.capture.get()
+
         return super().pause()
 
     def resume(self):
-        self.hdf5.capture.put(1)
+        set_val = 1
+        self.hdf5.capture.put(set_val)
+        # can add this if we're not confident about setting...
+        #val = self.hdf5.capture.get()
+        #print("resuming FCCD")
+        #while (np.abs(val-set_val) > 1e-6):
+            #self.hdf5.capture.put(set_val)
+            #val = self.hdf5.capture.get()
+        #print("Success")
         return super().resume()
 
 

@@ -56,8 +56,8 @@ dif_beam = StandardCam('XF:23ID1-ES{Dif-Cam:Beam}', name='dif_beam')
 _setup_stats(dif_beam)
 
 # Setup on 2018/03/16 for correlating fCCD and sample position
-dif_cam1 = StandardCam('XF:23ID1-ES{Dif-Cam:1}', name='dif_cam1')
-_setup_stats(dif_cam1)
+#dif_cam1 = StandardCam('XF:23ID1-ES{Dif-Cam:1}', name='dif_cam1')
+#_setup_stats(dif_cam1)
 
 #dif_cam2 = StandardCam('XF:23ID1-ES{Dif-Cam:2}', name='dif_cam2')
 #_setup_stats(dif_cam2)
