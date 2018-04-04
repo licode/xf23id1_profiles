@@ -58,6 +58,13 @@ class KeithleyK2611B_SourceMeter(EpicsMotor):
         return st
 
 
+# check if nanop already there and remove it
+try:
+    sd.baseline.remove(smtr):
+except NameError:
+    pass
+
+
 smtr= KeithleyK2611B_SourceMeter('XF:23ID1-ES{K2611:1}', name='smtr')
 
 smtr.read_attrs=smtr._default_read_attrs
