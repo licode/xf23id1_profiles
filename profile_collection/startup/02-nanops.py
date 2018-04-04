@@ -31,7 +31,8 @@ class NanoMotorOpenLoop(EpicsMotor):
     #acceleration=Cpt(EpicsSignal,'DMOV')
     user_readback = Cpt(EpicsSignal, 'AbsLast')
     dly = Cpt(EpicsSignal, '.DLY')
-    # no retry is needed here due to the open loop mode..
+    # not needed here due to ppen loop mode.. but kept for symmetry
+    rtry = Cpt(EpicsSignal, '.RTRY')
     rdbd = Cpt(EpicsSignal, '.RDBD')
     rmod = Cpt(EpicsSignal, '.RMOD')
     cnen = Cpt(EpicsSignal, '.CNEN')
@@ -85,6 +86,13 @@ class NanoBundle(MotorBundle):
     #swap between the two following line if BtmZ close/open loop is desired, respectively
     #bz = Cpt(NanoMotor, 'BtmZ}Mtr')
     bz = Cpt(NanoMotorOpenLoop, 'BtmZ}OL')
+
+
+# check if nanop already there and remove it
+try:
+    sd.baseline.remove(nanop):
+except NameError:
+    pass
 
 nanop = NanoBundle('XF:23ID1-ES{Dif:Nano-Ax:', name='nanop')
 nanop.bz.remove_bad_signals()  # solve the issue with disconnection errors
