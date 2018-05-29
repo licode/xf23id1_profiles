@@ -11,7 +11,7 @@ from ophyd import Component as Cpt
 from ophyd.device import FormattedComponent as FCpt
 from ophyd import AreaDetector
 
-from bluesky.examples import NullStatus
+from ophyd.sim import NullStatus
 
 from .devices import DelayGenerator
 from .scaler import StruckSIS3820MCS
@@ -234,6 +234,7 @@ class ProductionCamTriggered(ProductionCamStandard):
         self._mcs_prefix = mcs_prefix
         super().__init__(*args, **kwargs)
 
+
     def trigger(self):
         self.mcs.trigger()
         return super().trigger()
@@ -241,3 +242,43 @@ class ProductionCamTriggered(ProductionCamStandard):
     def read(self):
         self.mcs.read()
         return super().read()
+
+
+
+
+class StageOnFirstTrigger(ProductionCamTriggered):
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.trigger_staged = False
+
+    def _trigger_stage(self):
+
+        self._acquisition_signal.subscribe(self._acquire_changed)
+        return super().stage()
+
+    def stage(self):
+        return [self]
+
+    def unstage(self):
+        super().unstage()
+        self._acquisition_signal.clear_sub(self._acquire_changed)
+        self.trigger_staged = False
+
+
+    def trigger(self):
+        from ophyd.utils import set_and_wait
+        import time as ttime
+
+
+        if not self.trigger_staged:
+            self._trigger_stage()
+            self.trigger_staged = True
+
+        return super().trigger()
+
+
+
+

@@ -8,14 +8,15 @@ from ophyd.areadetector import ADComponent, EpicsSignalWithRBV
 from ophyd.areadetector.plugins import PluginBase, ProcessPlugin
 from ophyd import Component as Cpt
 from ophyd import AreaDetector
-from bluesky.examples import NullStatus
+from ophyd.sim import NullStatus
 from collections import OrderedDict
 import bluesky.plans as bp
 
 from ..devices.scaler import PrototypeEpicsScaler, StruckSIS3820MCS
 from ..devices.areadetector import (StandardCam, NoStatsCam,
                                   ProductionCamStandard,
-                                  ProductionCamTriggered)
+                                  ProductionCamTriggered,
+                                  StageOnFirstTrigger)
 from ..startup import db
 
 def _setup_stats(cam_in):
@@ -69,7 +70,8 @@ _setup_stats(dif_beam)
 # FastCCD
 #
 
-fccd = ProductionCamTriggered('XF:23ID1-ES{FCCD}',
+fccd = StageOnFirstTrigger('XF:23ID1-ES{FCCD}',
+#fccd = ProductionCamTriggered('XF:23ID1-ES{FCCD}',
                               dg1_prefix='XF:23ID1-ES{Dly:1',
                               dg2_prefix='XF:23ID1-ES{Dly:2',
                               mcs_prefix='XF:23ID1-ES{Sclr:1}',
