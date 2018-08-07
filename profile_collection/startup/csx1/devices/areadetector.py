@@ -7,7 +7,7 @@ from ophyd.areadetector.detectors import DetectorBase
 from ophyd.areadetector.filestore_mixins import FileStoreHDF5IterativeWrite
 from ophyd.areadetector import ADComponent, EpicsSignalWithRBV
 from ophyd.areadetector.plugins import PluginBase, ProcessPlugin
-from ophyd import Component as Cpt
+from ophyd import Component as Cpt, Signal
 from ophyd.device import FormattedComponent as FCpt
 from ophyd import AreaDetector
 
@@ -15,6 +15,8 @@ from ophyd.sim import NullStatus
 
 from .devices import DelayGenerator
 from .scaler import StruckSIS3820MCS
+
+import bluesky.plan_stubs as bps
 
 import numpy as np
 
@@ -53,8 +55,11 @@ class HDF5PluginSWMR(HDF5Plugin):
 class HDF5PluginWithFileStore(HDF5PluginSWMR, FileStoreHDF5IterativeWrite):
     # AD v2.2.0 (at least) does not have this. It is present in v1.9.1.
     file_number_sync = None
-
+    squashing = Cpt(Signal, value=False)
+    
     def get_frames_per_point(self):
+        if self.squashing.get():
+            return 1
         return self.parent.cam.num_images.get()
 
 class FCCDCam(AreaDetectorCam):
@@ -214,6 +219,7 @@ class TriggeredCamExposure(Device):
 
         if exp[2] is not None:
             self.parent.cam.num_images.set(exp[2])
+            self.parent.proc1.num_filter.set(exp[2])            
 
         return NullStatus()
 
@@ -275,10 +281,8 @@ class StageOnFirstTrigger(ProductionCamTriggered):
 
         if not self.trigger_staged:
             self._trigger_stage()
+            self.proc1.reset_filter.put(1)
             self.trigger_staged = True
 
         return super().trigger()
-
-
-
 
