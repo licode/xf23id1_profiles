@@ -84,18 +84,20 @@ class NanoBundle(MotorBundle):
     bx = Cpt(NanoMotor, 'BtmX}Mtr')
     by = Cpt(NanoMotor, 'BtmY}Mtr')
     #swap between the two following line if BtmZ close/open loop is desired, respectively
-    #bz = Cpt(NanoMotor, 'BtmZ}Mtr')
-    bz = Cpt(NanoMotorOpenLoop, 'BtmZ}OL')
+    bz = Cpt(NanoMotor, 'BtmZ}Mtr')
+    #bz = Cpt(NanoMotorOpenLoop, 'BtmZ}OL')
 
 
 # check if nanop already there and remove it
 try:
-    sd.baseline.remove(nanop):
+    sd.baseline.remove(nanop)
 except NameError:
+    pass
+except ValueError:
     pass
 
 nanop = NanoBundle('XF:23ID1-ES{Dif:Nano-Ax:', name='nanop')
-nanop.bz.remove_bad_signals()  # solve the issue with disconnection errors
+#nanop.bz.remove_bad_signals()  # solve the issue with disconnection errors
 
 
 # Velocity (tested 0.5, 0.1, 0.05, 0.01)
@@ -119,7 +121,7 @@ _base_nano_setting = {'velocity': 0.10,
                       }
 
 for nn in nanop.component_names:
-    if nn == "bz":
+    if nn == "bz (remove this if open loop)":
         getattr(nanop, nn).configure({'velocity':0.10,'t_settle':temp_settle_time})
         continue
     getattr(nanop, nn).configure(_base_nano_setting)
