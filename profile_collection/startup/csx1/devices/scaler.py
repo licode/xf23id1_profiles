@@ -114,7 +114,7 @@ class StruckSIS3820MCS(Device):
         self.soft_channel_advance.put(1, wait=True)
         self.stop_all.put(1, wait=True)
 
-        for sn in self.wfrm_proc.signal_names:
+        for sn in self.wfrm_proc.component_names:
             getattr(self.wfrm_proc, sn).put(1)
 
         return super().read()

@@ -32,7 +32,8 @@ def relabel_fig(fig, new_label):
 
 fccd.hints = {'fields': ['fccd_stats1_total']}
 dif_beam.hints = {'fields' : ['dif_beam_stats3_total','dif_beam_stats1_total']}
-cube_beam.hints = {'fields': ['cube_beam_stats2_total', 'cube_beam_stats1_total']}
+## 20180726 needed to comment due to IOC1 problems
+#cube_beam.hints = {'fields': ['cube_beam_stats2_total', 'cube_beam_stats1_total']}
 
 # This was imported in 00-startup.py #  used to generate the list: [thing.name for thing in get_all_positioners()]
 

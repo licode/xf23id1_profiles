@@ -12,9 +12,11 @@ class EPSTwoStateDevice(Device):
                         string=True)
 
     status = Cpt(EpicsSignalRO, 'Pos-Sts', string=True)
-    fail_to_state2 = FmtCpt(EpicsSignalRO, '{self.prefix}Sts:Fail{self._state2_nm}-Sts',
+    fail_to_state2 = FmtCpt(EpicsSignalRO,
+                            '{self.prefix}Sts:Fail{self._state2_nm}-Sts',
                             string=True)
-    fail_to_state1 = FmtCpt(EpicsSignalRO, '{self.prefix}Sts:Fail{self._state1_nm}-Sts',
+    fail_to_state1 = FmtCpt(EpicsSignalRO,
+                            '{self.prefix}Sts:Fail{self._state1_nm}-Sts',
                             string=True)
 
     def set(self, val):
@@ -66,6 +68,12 @@ class EPSTwoStateDevice(Device):
     def __init__(self, *args, state1='Open', state2='Closed',
                  cmd_str1='Open', cmd_str2='Close',
                  nm_str1='Opn', nm_str2='Cls', **kwargs):
+
+        self._state1_nm = nm_str1
+        self._state2_nm = nm_str2
+        
+        super().__init__(*args, **kwargs)
+       
         self._set_st = None
         self.read_attrs = ['status']
 
@@ -74,7 +82,4 @@ class EPSTwoStateDevice(Device):
         self.state1_val = state1
         self.state2_val = state2
 
-        self._state1_nm = nm_str1
-        self._state2_nm = nm_str2
 
-        super().__init__(*args, **kwargs)

@@ -43,15 +43,17 @@ mcs = StruckSIS3820MCS('XF:23ID1-ES{Sclr:1}', name='mcs')
 # Diagnostic Prosilica Cameras
 #
 
-slt1_cam = StandardCam('XF:23ID1-BI{Slt:1-Cam:1}', name='slt1_cam')
-
-diag3 = StandardCam('XF:23ID1-BI{Diag:3-Cam:1}', name='diag3')
-_setup_stats(diag3)
+## 20180726 needed to comment due to IOC1 problems
+#slt1_cam = StandardCam('XF:23ID1-BI{Slt:1-Cam:1}', name='slt1_cam')
+#
+#diag3 = StandardCam('XF:23ID1-BI{Diag:3-Cam:1}', name='diag3')
+#_setup_stats(diag3)
 
 diag6 = NoStatsCam('XF:23ID1-BI{Diag:6-Cam:1}', name='diag6')
 
-cube_beam = StandardCam('XF:23ID1-BI{Diag:5-Cam:1}', name='cube_beam')
-_setup_stats(cube_beam)
+## 20180726 needed to comment due to IOC1 problems
+#cube_beam = StandardCam('XF:23ID1-BI{Diag:5-Cam:1}', name='cube_beam')
+#_setup_stats(cube_beam)
 
 dif_beam = StandardCam('XF:23ID1-ES{Dif-Cam:Beam}', name='dif_beam')
 _setup_stats(dif_beam)
