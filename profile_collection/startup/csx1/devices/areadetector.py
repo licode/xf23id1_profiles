@@ -42,7 +42,7 @@ class HDF5PluginSWMR(HDF5Plugin):
     swmr_supported = Cpt(EpicsSignalRO, 'SWMRSupported_RBV')
     swmr_cb_counter = Cpt(EpicsSignalRO, 'SWMRCbCounter_RBV')
     _default_configuration_attrs = (HDF5Plugin._default_configuration_attrs +
-                                    ('swmr_active', 'swrm_mode',
+                                    ('swmr_active', 'swmr_mode',
                                      'swmr_supported'))
 
     def __init__(self, *args, **kwargs):
