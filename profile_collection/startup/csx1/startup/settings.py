@@ -28,13 +28,15 @@ sclr.channels.read_attrs=['chan1','chan2','chan3','chan4','chan5','chan6']
 # sclr.hints = {'fields': ['sclr_ch2', 'sclr_ch3', 'sclr_ch6']}
 for i in [2, 3, 4, 5]:
     getattr(sclr.channels, f'chan{i}').kind = 'hinted'
+    # getattr(sclr.channels, f'chan{i}').kind = 'normal' will remove the
+    # hinted fields from LivePlot and LiveTable.
 
 def relabel_fig(fig, new_label):
     fig.set_label(new_label)
     fig.canvas.manager.set_window_title(fig.get_label())
 
 # fccd.hints = {'fields': ['fccd_stats1_total']}
-for i in [1]:
+for i in [1, 2, 3, 4, 5]:
     getattr(fccd, f'stats{i}').total.kind = 'hinted'
 
 # dif_beam.hints = {'fields' : ['dif_beam_stats3_total','dif_beam_stats1_total']}
