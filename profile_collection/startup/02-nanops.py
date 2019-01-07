@@ -7,9 +7,14 @@ from epics import caget,caput
 
 
 class NanoMotor(EpicsMotor):
+    if type(EpicsMotor._default_configuration_attrs) in [list]:
+        epics_config_attrs = EpicsMotor._default_configuration_attrs
+    else:
+        epics_config_attrs = []
+
     _default_configuration_attrs = (
-        EpicsMotor._default_configuration_attrs +
-        ('dly', 'rtry', 'rdbd', 'rmod', 'cnen', 'pcof', 'icof'))
+        epics_config_attrs +
+        ['dly', 'rtry', 'rdbd', 'rmod', 'cnen', 'pcof', 'icof'])
     user_setpoint = Cpt(EpicsSignal, 'PA_sm')
     dly = Cpt(EpicsSignal, '.DLY')
     rtry = Cpt(EpicsSignal, '.RTRY')
@@ -119,6 +124,9 @@ _base_nano_setting = {'velocity': 0.10,
                       'pcof': 0.1,
                       'icof': 0.010
                       }
+
+for cpt in ['tx', 'ty', 'tz', 'bx', 'by', 'bz']:
+    getattr(nanop, cpt).configuration_attrs.extend(['velocity', 'acceleration'])
 
 for nn in nanop.component_names:
     if nn == "bz (remove this if open loop)":

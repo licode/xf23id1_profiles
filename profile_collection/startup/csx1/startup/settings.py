@@ -24,16 +24,29 @@ sd.baseline = [theta, delta, gamma,
 
 sclr.names.read_attrs=['name1','name2','name3','name4','name5','name6']  # TODO  WHAT IS THIS??? - Dan Allan
 sclr.channels.read_attrs=['chan1','chan2','chan3','chan4','chan5','chan6']
-sclr.hints = {'fields': ['sclr_ch2', 'sclr_ch3', 'sclr_ch6']}
+# Old-style hints config is replaced by the new 'kind' feature
+# sclr.hints = {'fields': ['sclr_ch2', 'sclr_ch3', 'sclr_ch6']}
+for i in [2, 3, 4, 5]:
+    getattr(sclr.channels, f'chan{i}').kind = 'hinted'
+    # getattr(sclr.channels, f'chan{i}').kind = 'normal' will remove the
+    # hinted fields from LivePlot and LiveTable.
 
 def relabel_fig(fig, new_label):
     fig.set_label(new_label)
     fig.canvas.manager.set_window_title(fig.get_label())
 
-fccd.hints = {'fields': ['fccd_stats1_total']}
-dif_beam.hints = {'fields' : ['dif_beam_stats3_total','dif_beam_stats1_total']}
+# fccd.hints = {'fields': ['fccd_stats1_total']}
+for i in [1, 2, 3, 4, 5]:
+    getattr(fccd, f'stats{i}').total.kind = 'hinted'
+
+# dif_beam.hints = {'fields' : ['dif_beam_stats3_total','dif_beam_stats1_total']}
+for i in [1, 3]:
+    getattr(dif_beam, f'stats{i}').total.kind = 'hinted'
+
 ## 20180726 needed to comment due to IOC1 problems
 #cube_beam.hints = {'fields': ['cube_beam_stats2_total', 'cube_beam_stats1_total']}
+# for i in [1, 2]:
+#     getattr(cube_beam, f'stats{i}').total.kind = 'hinted'
 
 # This was imported in 00-startup.py #  used to generate the list: [thing.name for thing in get_all_positioners()]
 

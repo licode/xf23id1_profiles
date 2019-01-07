@@ -18,6 +18,9 @@ from .scaler import StruckSIS3820MCS
 
 import numpy as np
 
+from .stats_plugin import StatsPluginCSX
+
+
 class StandardCam(SingleTrigger, AreaDetector):
     stats1 = Cpt(StatsPlugin, 'Stats1:')
     stats2 = Cpt(StatsPlugin, 'Stats2:')
@@ -42,7 +45,7 @@ class HDF5PluginSWMR(HDF5Plugin):
     swmr_supported = Cpt(EpicsSignalRO, 'SWMRSupported_RBV')
     swmr_cb_counter = Cpt(EpicsSignalRO, 'SWMRCbCounter_RBV')
     _default_configuration_attrs = (HDF5Plugin._default_configuration_attrs +
-                                    ('swmr_active', 'swrm_mode',
+                                    ('swmr_active', 'swmr_mode',
                                      'swmr_supported'))
 
     def __init__(self, *args, **kwargs):
@@ -85,11 +88,11 @@ class FastCCDPlugin(PluginBase):
 class ProductionCamBase(DetectorBase):
     # # Trying to add useful info..
     cam = Cpt(FCCDCam, "cam1:")
-    stats1 = Cpt(StatsPlugin, 'Stats1:')
-    stats2 = Cpt(StatsPlugin, 'Stats2:')
-    stats3 = Cpt(StatsPlugin, 'Stats3:')
-    stats4 = Cpt(StatsPlugin, 'Stats4:')
-    stats5 = Cpt(StatsPlugin, 'Stats5:')
+    stats1 = Cpt(StatsPluginCSX, 'Stats1:')
+    stats2 = Cpt(StatsPluginCSX, 'Stats2:')
+    stats3 = Cpt(StatsPluginCSX, 'Stats3:')
+    stats4 = Cpt(StatsPluginCSX, 'Stats4:')
+    stats5 = Cpt(StatsPluginCSX, 'Stats5:')
     roi1 = Cpt(ROIPlugin, 'ROI1:')
     roi2 = Cpt(ROIPlugin, 'ROI2:')
     roi3 = Cpt(ROIPlugin, 'ROI3:')
